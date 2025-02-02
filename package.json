@@ -14,7 +14,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "mongodb": "^6.13.0",
-    "mongoose": "^8.9.6"
+    "mongoose": "^8.9.6",
+    "pino": "^9.6.0",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",

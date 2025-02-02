@@ -9,3 +9,13 @@ export const Enums = Object.freeze({
   SUCCESS: "success",
   FAILED: "failed",
 });
+
+export const Codes = Object.freeze({
+  AC_001: "AC-001",
+  AC_002: "AC-002",
+});
+
+export const Messages = Object.freeze({
+  AC_001: "Account created",
+  AC_002: "Error creating account",
+});

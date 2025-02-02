@@ -1,30 +1,36 @@
-import AccountSchema from "../models/account_models.js";
+import {
+  AccountServiceModel,
+  AccountMongooseModel,
+} from "../models/account_models.js";
 import { ResponseModel } from "../models/response_models.js";
+import { Codes, Enums, Messages } from "../enums/enums.js";
 export async function createAccount(req, res) {
-  // const body = req.body;
-  // const accountModel = new AccountModel(
-  //   body.username,
-  //   body.password,
-  //   body.email,
-  //   body.telephone
-  // );
   try {
-    const newAccount = await AccountSchema.create({
-      username,
-      password,
-      email,
-      telephone,
-    });
-  } catch {
-    return res
-      .status(500)
-      .json(new ResponseModel(false, "AC-002", "Error creating account", null));
-  }
+    const body = req.body;
+    const newAccount = new AccountServiceModel(
+      body.username,
+      body.password,
+      body.email,
+      body.telephone
+    );
 
-  res.status(201).json({
-    status: true,
-    code: "AC-001",
-    message: "Account created",
-    // data: `${JSON.stringify(accountModel)}`,
-  });
+    await AccountMongooseModel.create(newAccount);
+
+    res.status(Enums.CREATE).json({
+      status: Enums.SUCCESS,
+      code: Codes.AC_001,
+      message: Messages.AC_001,
+      data: `${JSON.stringify(newAccount)}`,
+    });
+  } catch (error) {
+    res.status(Enums.SERVER_ERROR).json(
+      ResponseModel.create({
+        status: Enums.FAILED,
+        code: Codes.AC_002,
+        message: Messages.AC_002,
+        data: error ?? null,
+      })
+    );
+    // throw error;
+  }
 }
