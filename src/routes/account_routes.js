@@ -1,7 +1,7 @@
-const express = require("express");
-const { createAccount } = require("../controllers/account_controller");
-const routerAccount = express.Router();
+import { Router } from "express";
+import { createAccount } from "../controllers/account_controller.js";
+const routerAccount = Router();
 
 routerAccount.route("/").post(createAccount);
 
-module.exports = routerAccount;
+export default routerAccount;
