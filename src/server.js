@@ -13,7 +13,7 @@ app.use("/api/v1/register", routerAccount);
 
 // app.use("/api/v1/reservation", routerAccount);
 
-connectDB();
+connectDB(logger);
 
 app.listen(port, () => {
   logger.info(`server started on port ${port}`);

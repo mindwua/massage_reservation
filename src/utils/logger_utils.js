@@ -2,13 +2,8 @@ import winston from "winston";
 
 const logger = winston.createLogger({
   level: "info",
-  format: winston.format.combine(
-    winston.format.json(),
-    winston.format.timestamp()
-  ),
-  transports: [
-    new winston.transports.Console({ format: winston.format.simple() }),
-  ],
+  format: winston.format.cli(),
+  transports: [new winston.transports.Console({ timestamp: true })],
 });
 
 export default logger;
