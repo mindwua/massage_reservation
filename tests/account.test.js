@@ -4,7 +4,7 @@
 // describe("POST /api/v1/register", () => {
 //   it("should create a new account and return 201 status", async () => {
 //     const res = await request(app).post("/api/v1/register").send({
-//       username: "testuser",
+//       name: "testuser",
 //       email: "test@example.com",
 //       password: "Test@1234",
 //       telephone: "0909877913",

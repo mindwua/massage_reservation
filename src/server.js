@@ -9,7 +9,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use("/api/v1/register", routerAccount);
+app.use("/api/v1", routerAccount);
+
 
 
 connectDB(logger);
