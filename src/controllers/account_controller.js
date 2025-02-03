@@ -10,6 +10,34 @@ const hideEmail = (email) => {
   return `${hiddenLocalPart}@${domainPart}`;
 };
 
+
+const LINE_API_URL = 'https://api.line.me/v2/bot/message/push';
+const LINE_ACCESS_TOKEN = 'ef8e17e7e364153ff55d4db0b2ac6f6b';  // Replace with your actual LINE access token
+
+const sendLineMessage = async (userName, userEmail, userTelephone) => {
+  try {
+    const message = {
+      to: 'USER_LINE_ID', // Replace with the user LINE ID to send message
+      messages: [
+        {
+          type: 'text',
+          text: `Hello ${userName}, your account with email ${userEmail} and telephone ${userTelephone} has been created successfully!`,
+        },
+      ],
+    };
+
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${LINE_ACCESS_TOKEN}`,
+    };
+
+    // Send POST request to LINE API
+    await axios.post(LINE_API_URL, message, { headers });
+  } catch (error) {
+    console.error('Error sending LINE message:', error.message);
+  }
+};
+
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const telephoneRegex = /^[0-9]{10}$/;
 const nameRegex = /^[A-Za-zก-ฮะๆ-๏\s]+$/;
@@ -97,6 +125,8 @@ export async function createAccount(req, res) {
     );
 
     await AccountMongooseModel.create(newAccount);
+    await sendLineMessage(newAccount.name, newAccount.email, newAccount.telephone);
+
 
     res.status(Enums.CREATE).json({
       status: Enums.SUCCESS,
