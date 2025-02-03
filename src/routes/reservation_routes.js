@@ -4,7 +4,7 @@ import { verifyToken } from "../middleware/auth.js"; // ใช้เส้นท
 
 const routerReservation = Router();
 
-routerReservation.post("/booking", bookingReservation);
+routerReservation.post("/booking", verifyToken, bookingReservation);
 
 
 export default routerReservation;

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-class ReservationServiceModel {
+class MassageShopServiceModel {
   constructor(shopId, shopName, shopAddress, telephone, openTime, closeTime) {
     this.shopId = shopId;
     this.shopName = shopName;
@@ -25,9 +25,9 @@ class ReservationServiceModel {
   }
 }
 
-const ReservationMongooseModel = mongoose.model(
-  "Account",
-  ReservationServiceModel.getSchema()
+const MassageShopMongooseModel = mongoose.model(
+  "MassageShop",
+  MassageShopServiceModel.getSchema()
 );
 
-export { ReservationServiceModel, ReservationMongooseModel };
+export { MassageShopServiceModel, MassageShopMongooseModel };
