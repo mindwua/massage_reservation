@@ -21,6 +21,7 @@ export const Codes = Object.freeze({
   LG_008: "LG-008",
   RS_009: "RS-009",
   RS_010: "RS-010",
+  RS_011: "RS-011",
   VL_011: "VL-011",
 
 });
@@ -36,5 +37,6 @@ export const Messages = Object.freeze({
   LG_008: "Login successful",
   RS_009: "Reservation created successfully",
   RS_010: "Reservation created failed",
+  RS_011: "Reservation created failed : Shop not found",
   VL_011: "Validation failed",
 });

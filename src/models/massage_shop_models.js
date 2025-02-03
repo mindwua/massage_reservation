@@ -13,7 +13,7 @@ class MassageShopServiceModel {
   static getSchema() {
     return new mongoose.Schema(
       {
-        shopId: { type: String, required: true },
+        shopId: { type: BigInt, required: true },
         shopName: { type: String, required: true },
         shopAddress: { type: String, required: true },
         telephone: { type: String, required: true },
@@ -26,7 +26,7 @@ class MassageShopServiceModel {
 }
 
 const MassageShopMongooseModel = mongoose.model(
-  "MassageShop",
+  "Massage_Shop",
   MassageShopServiceModel.getSchema()
 );
 
