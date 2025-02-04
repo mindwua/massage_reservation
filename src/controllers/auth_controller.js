@@ -2,18 +2,13 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { AccountMongooseModel } from "../models/account_models.js";
 import { Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
+import redisClient from '../utils/redis_utils.js';
+import { addToBlacklist } from '../middleware/token_blacklist.js';
+
+
 
 export async function loginUser(req, res) {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            status: StatusMessages.FAILED,
-            code: Codes.VAL_4001,
-            message: Messages.VAL_4001
-        });
-    }
-
     try {
         const user = await AccountMongooseModel.findOne({ email });
         if (!user) {
@@ -60,8 +55,31 @@ export async function loginUser(req, res) {
     }
 }
 
-export const logoutUser = (req, res) => {
+
+export const verifyTokenHandler = (req, res) => {
+    res.status(StatusCodes.OK).json({
+        status: StatusMessages.FAILED,
+        code: Codes.TKN_6001,
+        message: Messages.TKN_6001,
+    });
+};
+
+export const logoutUser = async (req, res) => {
+
+    res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "Strict" });
+
     try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                status: StatusMessages.FAILED,
+                code: Codes.TKN_6001,
+                message: Messages.TKN_6001,
+            });
+        }
+
+        await addToBlacklist(token);
+
         res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "Strict" });
 
         res.status(StatusCodes.OK).json({
@@ -77,12 +95,3 @@ export const logoutUser = (req, res) => {
         });
     }
 };
-
-export const verifyTokenHandler = (req, res) => {
-    res.status(StatusCodes.OK).json({
-        status: StatusMessages.FAILED,
-        code: Codes.TKN_6001,
-        message: Messages.TKN_6001,
-    });
-};
-

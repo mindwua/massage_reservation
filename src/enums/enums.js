@@ -77,9 +77,6 @@ export const Messages = Object.freeze({
   LOT_5001: "Logout successful",
 
   // Permission Messages
-  TKN_6001: "Token is valid",
-  TKN_6002: "Access denied.No token provide",
-  TKN_6003: "Invalid or expired token.",
-
-
+  TKN_6001: "Access denied. No token provided.",
+  TKN_6002: "Invaild or session expired",
 });

@@ -20,6 +20,7 @@
     "mongodb": "^6.13.0",
     "mongoose": "^8.9.6",
     "pino": "^9.6.0",
+    "redis": "^4.7.0",
     "winston": "^3.17.0"
   },
   "devDependencies": {
