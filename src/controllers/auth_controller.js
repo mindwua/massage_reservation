@@ -2,10 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { AccountMongooseModel } from "../models/account_models.js";
 import { Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
-import redisClient from '../utils/redis_utils.js';
 import { addToBlacklist } from '../middleware/token_blacklist.js';
-
-
 
 export async function loginUser(req, res) {
     const { email, password } = req.body;
