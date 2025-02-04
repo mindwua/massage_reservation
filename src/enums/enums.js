@@ -1,4 +1,8 @@
 export const Enums = Object.freeze({
+
+});
+
+export const StatusCodes = Object.freeze({
   OK: 200,
   CREATE: 201,
   BAD_REQUEST: 400,
@@ -6,37 +10,76 @@ export const Enums = Object.freeze({
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   SERVER_ERROR: 500,
+});
+
+export const StatusMessages = Object.freeze({
   SUCCESS: "success",
   FAILED: "failed",
+  SERVER_ERROR: "server_error",
+
+
 });
 
 export const Codes = Object.freeze({
-  AC_001: "AC-001",
-  AC_002: "AC-002",
-  AC_003: "AC-003",
-  AC_004: "AC-004",
-  AC_005: "AC-005",
-  AC_006: "AC-006",
-  LG_007: "LG-007",
-  LG_008: "LG-008",
-  RS_009: "RS-009",
-  RS_010: "RS-010",
-  RS_011: "RS-011",
-  VL_011: "VL-011",
+  // Register Codes
+  REG_1001: "REG_1001",
+  REG_1002: "REG_1002",
+  REG_1003: "REG_1003",
+  REG_1004: "REG_1004",
+  REG_1005: "REG_1005",
+  REG_1006: "REG_1006",
+
+  // Auth Codes
+  LGN_2001: "LGN_2001",
+  LGN_2002: "LGN_2002",
+
+  // Reservation Codes
+  RSV_3001: "RSV_3001",
+  RSV_3002: "RSV_3002",
+  RSV_3003: "RSV_3003",
+
+  // Validation Codes
+  VAL_4001: "VAL_4001",
+
+  // Logout Codes
+  LOT_5001: "LOT_5001",
+
+  // Permission Messages
+  TKN_6001: "TKN_6001",
+  TKN_6002: "TKN_6002",
+  TKN_6003: "TKN_6003",
 
 });
 
 export const Messages = Object.freeze({
-  AC_001: "Success: Account creation completed successfully",
-  AC_002: "Missing Required Fields: Missing required fields",
-  AC_003: "Invalid Formats",
-  AC_004: "Name Already Exists: The name already exists in the system.",
-  AC_005: "Email Already Exists: The name already exists in the system.",
-  AC_006: "Password must meet the following requirements: 1. Length: Between 8 and 20 characters. 2. At least one uppercase letter (A-Z). 3. At least one lowercase letter (a-z). 4. At least one number (0-9). 5. At least one special character (e.g., !@#$%^&*(),.?\":{}|<>).",
-  LG_007: "Invalid email or password",
-  LG_008: "Login successful",
-  RS_009: "Reservation created successfully",
-  RS_010: "Reservation created failed",
-  RS_011: "Reservation created failed : Shop not found",
-  VL_011: "Validation failed",
+  // Register Messages
+  REG_1001: "Registration successfully",
+  REG_1002: "Missing Required Fields: Missing required fields",
+  REG_1003: "Invalid Formats",
+  REG_1004: "Name Already Exists: The name already exists in the system.",
+  REG_1005: "Email Already Exists: The email already exists in the system.",
+  REG_1006: "Password must meet the following requirements: 1. Length between 8 and 20 characters, 2. At least one uppercase letter (A-Z), 3. At least one lowercase letter (a-z), 4. At least one number (0-9), 5. At least one special character (e.g., !@#$%^&*(),.?\":{}|<>).",
+
+  // Auth Messages
+  LGN_2001: "Login successful",
+  LGN_2002: "The password you entered is incorrect. Please try again.",
+  LGN_2003: "The email you entered is incorrect. Please try again.",
+
+  // Reservation Messages
+  RSV_3001: "Reservation created successfully",
+  RSV_3001: "Reservation creation failed",
+  RSV_3001: "Reservation creation failed: Shop not found",
+
+  // Validation Messages
+  VAL_4001: "Required fields are missing. Please fill in all the necessary fields.",
+
+  // Logout Messages
+  LOT_5001: "Logout successful",
+
+  // Permission Messages
+  TKN_6001: "Token is valid",
+  TKN_6002: "Access denied.No token provide",
+  TKN_6003: "Invalid or expired token.",
+
+
 });

@@ -1,6 +1,5 @@
-// /src/middleware/auth.js
 import jwt from 'jsonwebtoken';
-import { Codes, Enums, Messages } from "../enums/enums.js";
+import { Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
 
 
 const verifyToken = (req, res, next) => {
@@ -9,8 +8,9 @@ const verifyToken = (req, res, next) => {
 
     if (!token) {
         return res.status(Enums.UNAUTHORIZED).json({
-            success: Enums.FAILED,
-            message: 'Access denied. No token provided.',
+            status: StatusMessages.FAILED,
+            code: Codes.TKN_6002,
+            message: Messages.TKN_6002,
         });
     }
 
@@ -20,8 +20,9 @@ const verifyToken = (req, res, next) => {
         next();
     } catch (error) {
         return res.status(Enums.FORBIDDEN).json({
-            success: Enums.FAILED,
-            message: 'Invalid or expired token.',
+            status: StatusMessages.FAILED,
+            code: Codes.TKN_6003,
+            message: Messages.TKN_6003,
         });
     }
 };
