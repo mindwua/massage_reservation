@@ -47,7 +47,13 @@ export const Codes = Object.freeze({
   // Permission Messages
   TKN_6001: "TKN_6001",
   TKN_6002: "TKN_6002",
-  TKN_6003: "TKN_6003",
+
+  // Massage Shops
+  MGS_1001: "MGS_1001",
+  MGS_1002: "MGS_1002",
+  MGS_1003: "MGS_1003",
+  MGS_1004: "MGS_1004",
+  MGS_1005: "MGS_1005",
 
 });
 
@@ -70,8 +76,16 @@ export const Messages = Object.freeze({
   RSV_3001: "Reservation creation failed",
   RSV_3001: "Reservation creation failed: Shop not found",
 
+  // Massage Shops
+  MGS_1001: "Massage Shops created successfully",
+  MGS_1002: "The Massage Shops Already Exists: The name already exists in the system.",
+  MGS_1003: "You do not have permission to create a massage shop",
+  MGS_1004: "MGS_1004",
+  MGS_1005: "MGS_1005",
+
   // Validation Messages
   VAL_4001: "Required fields are missing. Please fill in all the necessary fields.",
+  VAL_4002: "Invalid phone number format",
 
   // Logout Messages
   LOT_5001: "Logout successful",
@@ -79,4 +93,5 @@ export const Messages = Object.freeze({
   // Permission Messages
   TKN_6001: "Access denied. No token provided.",
   TKN_6002: "Invaild or session expired",
+
 });
