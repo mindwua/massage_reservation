@@ -6,7 +6,7 @@ import logger from "../utils/logger_utils.js";
 const validateBody = (schema) => (req, res, next) => {
     try {
         const { error } = schema.validate(req.body, { abortEarly: false });
-        
+
         if (error) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: StatusMessages.FAILED,
@@ -23,7 +23,7 @@ const validateBody = (schema) => (req, res, next) => {
             message: Messages.GNR_1001
         });
     }
-    
+
 };
 
 
