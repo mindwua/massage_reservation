@@ -7,7 +7,7 @@ import routerReservation from "./routes/reservation_routes.js";
 import routerAuth from './routes/auth_routes.js';
 import routerMassageShops from "./routes/massage_shops.js";
 import redisClient from './utils/redis_utils.js';
-import { sendPromotion } from './utils/promotion_scheduler.js';
+import { sendPromotion } from './schedules/promotion_scheduler.js';
 
 
 dotenv.config({ path: "./src/config/config.env" });
