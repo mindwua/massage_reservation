@@ -18,13 +18,36 @@ const runAggregation = async () => {
     try {
         await connectDB(console);
 
+        console.log('🔍 Running Aggregation...');
+
         const results = await Reservation.aggregate([
+            {
+                $addFields: {
+                    shopIdObject: { $toObjectId: "$shopId" }
+                },
+            },
             {
                 $lookup: {
                     from: 'massage_shops',
-                    localField: 'shopId',
+                    localField: 'shopIdObject',
                     foreignField: '_id',
                     as: 'shopDetails',
+                },
+            },
+            {
+                $unwind: '$shopDetails',
+            },
+            {
+                $project: {
+                    bookingId: 1,
+                    date: 1,
+                    userId: 1,
+                    status: 1,
+                    shopName: '$shopDetails.shopName',
+                    shopAddress: '$shopDetails.shopAddress',
+                    telephone: '$shopDetails.telephone',
+                    openTime: '$shopDetails.openTime',
+                    closeTime: '$shopDetails.closeTime',
                 },
             },
         ]);
@@ -32,7 +55,7 @@ const runAggregation = async () => {
         console.log('Aggregation Results:', results);
         mongoose.connection.close();
     } catch (error) {
-        console.error('Aggregation Error:', error);
+        console.error(' Aggregation Error:', error);
     }
 };
 
