@@ -1,30 +1,29 @@
 
-import { Enums, Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
+import { Codes, Enums, Messages, StatusCodes, StatusMessages } from "../enums/enums.js";
+import { bookingSchema } from "../utils/joi_validator_utils.js";
 import logger from "../utils/logger_utils.js";
-
 
 const validateBody = (schema) => (req, res, next) => {
     try {
         const { error } = schema.validate(req.body, { abortEarly: false });
-
+        
         if (error) {
-             return res.status(StatusCodes.BAD_REQUEST).json({
+            return res.status(StatusCodes.BAD_REQUEST).json({
                 success: StatusMessages.FAILED,
-                code: Codes.VAL_4001,
-                message: Messages.VAL_4001,
+                code: Codes.VAL_4004,
+                message: Messages.VAL_4004,
                 data: error.details.map((err) => err.message),
             });
         }
         next();
     } catch (e) {
-        logger.error(JSON.stringify(e))
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            success: StatusMessages.FAILED,
-            code: Codes.VAL_4001,
-            message: Messages.VAL_4001,
-            data: error.details.map((err) => err.message),
+        return res.status(StatusCodes.SERVER_ERROR).json({
+            success: StatusMessages.SERVER_ERROR,
+            code: Codes.GNR_1001,
+            message: Messages.GNR_1001
         });
     }
+    
 };
 
 

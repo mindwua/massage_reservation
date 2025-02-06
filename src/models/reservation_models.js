@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
 class ReservationServiceModel {
-  constructor({date, shopId, userId}) {
+  constructor(date, shopId, userId) {
     this.date = date;
     this.shopId = shopId;
     this.userId = userId
+    this.status = "Pending"
   }
 
   static getSchema() {
@@ -13,6 +14,7 @@ class ReservationServiceModel {
         date: { type: Date, required: true },
         shopId: { type: String, required: true },
         userId: { type: String, required: true },
+        status: { type: String, required: true , default: "Pending"},
       },
       { timestamps: true }
     );

@@ -17,27 +17,28 @@ async function validateShop(shopId) {
 
 export async function bookingReservation(req, res) {
     try {
-        logger.info(`userId >>> ${req.user.userId}`)
-        const reservationModel = new ReservationServiceModel({  
-            date: req.body.date,
-            shopId: req.body.shopId,
-            userId: req.user.userId}
-        )
+        const reservationModel = new ReservationServiceModel(
+            req.body.date,
+            req.body.shopId,
+            req.user.userId
+        ) 
         const result = await validateShop(reservationModel.shopId)
-        // const reservation =  await ReservationMongooseModel.find({date: reservationModel.date})
+
         if (result) {
             await ReservationMongooseModel.create(reservationModel)
+            logger.info("Reservation created successfully")
+            logger.info(req.body.date)
             res.status(StatusCodes.OK).json({
                 status: StatusMessages.SUCCESS,
                 code: Codes.RSV_3001,
-                message: Messages.RS_009,
-                data: result
+                message: Messages.RSV_3001,
+                data: {}
             });
         } else {
             res.status(StatusCodes.NOT_FOUND).json({
                 status: StatusMessages.FAILED,
-                code: Codes.RSV_3003,
-                message: Messages.RSV_3003,
+                code: Codes.RSV_3001,
+                message: Messages.RSV_3001,
             });
         }
    
@@ -45,8 +46,8 @@ export async function bookingReservation(req, res) {
         logger.error(e)
         res.status(StatusCodes.SERVER_ERROR).json({
             status: StatusMessages.FAILED,
-            code: Codes.RSV_3002,
-            message: Messages.RSV_3002,
+            code: Codes.GNR_1001,
+            message: Messages.GNR_1001,
         });
     }
 
