@@ -127,16 +127,16 @@ export async function getReservation(req, res) {
         let result
         const userId =  req.user.userId
         const isAdmin = req.user.isAdmin
-        if (req.user.isAdmin) {
-            if (req.query.shopId || req.query.status) {
-                 result = await ReservationServiceModel.runAggregation(isAdmin, req.query.shopId, req.query.status, userId)
+        if (isAdmin) {
+            if (req.query.userId || req.query.shopId || req.query.status) {
+                 result = await ReservationServiceModel.runAggregation(isAdmin, req.query, userId)
                 
             } else {
                  result = await  ReservationServiceModel.runAggregation(isAdmin)
             }
         } else {
             if (req.query.shopId || req.query.status) {
-                 result = await ReservationServiceModel.runAggregation(isAdmin, req.query.shopId, req.query.status, userId)
+                 result = await ReservationServiceModel.runAggregation(isAdmin, req.query, userId)
              } else {
                  result = await  ReservationServiceModel.runAggregation(isAdmin)
              }

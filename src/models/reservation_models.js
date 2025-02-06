@@ -28,17 +28,19 @@ class ReservationServiceModel {
     );
   }
 
-  static runAggregation = async (isAdmin , shopId, status, userId) => {
+  static runAggregation = async (isAdmin , reqQuery, userId) => {
     try {
       logger.info("🔍 Running Aggregation...");
-
+      console.log(reqQuery)
+      console.log('===')
       const matchStage = {};
 
       if (userId && !isAdmin) matchStage.userId = userId;
-      if (shopId) matchStage.shopId = shopId;
-      if (status) matchStage.status = status;
+      if (reqQuery?.userId && isAdmin) matchStage.userId = reqQuery.userId;
+      if (reqQuery?.shopId) matchStage.shopId = reqQuery.shopId;
+      if (reqQuery?.status) matchStage.status = reqQuery.status;
 
-      console.log(matchStage);
+      logger.info(`matchStage >>>>> ${JSON.stringify(matchStage)}`);
 
       const results = await ReservationMongooseModel.aggregate([
         { $match: matchStage },
@@ -74,10 +76,10 @@ class ReservationServiceModel {
         },
       ]);
 
-      // console.log("Aggregation Results:", results);
+      console.log("Aggregation Results:", results.length);
       return results
     } catch (error) {
-      logger.error(" Aggregation Error:", JSON.stringify(error));
+      throw new Error(error)
     }
   };
 }
