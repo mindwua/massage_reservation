@@ -37,6 +37,8 @@ export const Codes = Object.freeze({
   RSV_3001: "RSV_3001",
   RSV_3002: "RSV_3002",
   RSV_3003: "RSV_3003",
+  RSV_3004: "RSV_3003",
+
 
   // Validation Codes
   VAL_4001: "VAL_4001",
@@ -80,6 +82,8 @@ export const Messages = Object.freeze({
   RSV_3001: "Reservation created successfully",
   RSV_3002: "Reservation creation failed",
   RSV_3003: "Reservation creation failed: Shop not found",
+  RSV_3004: "User has too many pending reservations for this date",
+
 
   // Massage Shops
   MGS_1001: "Massage Shops created successfully",
