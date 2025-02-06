@@ -1,8 +1,11 @@
 import Joi from "joi";
 
+// Define the schema
 export const bookingSchema = Joi.object({
-    date: Joi.string().min(3).max(30).required(),
-    shopId: Joi.string().required(),
+    shopId: Joi.string()
+        .regex(/^[0-9a-fA-F]{24}$/) // Validate MongoDB ObjectId (24 hex characters)
+        .required(),
+    date: Joi.date()
+        .min('now') // Ensures the date is today or in the future
+        .required()
 });
-
-
