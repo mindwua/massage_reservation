@@ -1,10 +1,14 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { AppBar, Toolbar, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
+import axios from 'axios';
 import './Booking.css';
 
 const ViewBooking = () => {
   const navigate = useNavigate(); 
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedBookingID, setSelectedBookingID] = useState(null);
+
   const handleLogout = () => {
     alert("Logged out!"); 
   };
@@ -50,7 +54,32 @@ const ViewBooking = () => {
   };
 
   const handleDelete = (bookingID) => {
-    alert(`Delete booking: ${bookingID}`);
+    setSelectedBookingID(bookingID);
+    setOpenDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("Please log in.");
+        return;
+      }
+
+      const res = await axios.delete(`/api/v1/booking/${selectedBookingID}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert("Booking deleted successfully!");
+      setOpenDialog(false); 
+    } catch (err) {
+      alert("Failed to delete the booking.");
+      setOpenDialog(false);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false); 
   };
 
   return (
@@ -70,7 +99,7 @@ const ViewBooking = () => {
       </AppBar>
 
       {/* Main content */}
-      <div className="view-booking-container" style={{ marginTop: '70px' }}> {}
+      <div className="view-booking-container" style={{ marginTop: '70px' }}>
         <h2>Booking Details</h2>
         <table className="booking-table">
           <thead>
@@ -104,6 +133,22 @@ const ViewBooking = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this booking? This action cannot be undone.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

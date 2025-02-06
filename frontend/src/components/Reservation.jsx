@@ -93,8 +93,7 @@ function Reservation() {
   
     try {
       setLoading(true);
-      setError("");
-  
+      setError(""); 
       const res = await axios.post("/api/v1/booking", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
