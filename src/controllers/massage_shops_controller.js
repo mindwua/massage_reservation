@@ -1,6 +1,7 @@
 import { MassageShopServiceModel, MassageShopMongooseModel } from "../models/massage_shop_models.js";
 import { ResponseModel } from "../models/response_models.js";
 import { StatusCodes, StatusMessages, Codes, Messages } from "../enums/enums.js";
+import mongoose from 'mongoose';
 
 export async function createMassageShop(req, res) {
     try {
@@ -87,8 +88,7 @@ export async function getAllMassageShops(req, res) {
         const totalShops = await MassageShopMongooseModel.countDocuments();
 
         const formattedShops = massageShops.map(shop => ({
-            _id: shop._id.toString(),
-            shopId: shop.shopId,
+            shopId: shop._id.toString(),
             shopName: shop.shopName,
             shopAddress: shop.shopAddress,
             telephone: shop.telephone,
@@ -97,6 +97,7 @@ export async function getAllMassageShops(req, res) {
         }));
 
         return res.status(StatusCodes.OK).json({
+            status: StatusMessages.SUCCESS,
             count: totalShops,
             page: page,
             totalPages: Math.ceil(totalShops / limit),
@@ -112,31 +113,186 @@ export async function getAllMassageShops(req, res) {
     }
 }
 
-
 export async function getMassageShopById(req, res) {
     try {
         const { shopId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(shopId)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.MGS_1004,
+                message: Messages.MGS_1004,
+            });
+        }
+
+        if (!shopId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.VAL_4001,
+                message: "Shop ID is required"
+            });
+        }
 
         const massageShop = await MassageShopMongooseModel.findById(shopId);
 
         if (!massageShop) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 status: StatusMessages.FAILED,
-                code: Codes.MGS_1006,
-                message: Messages.MGS_1006
+                code: Codes.MGS_1004,
+                message: "Massage shop not found"
             });
         }
 
-        res.status(StatusCodes.SUCCESS).json({
+        return res.status(StatusCodes.OK).json({
             status: StatusMessages.SUCCESS,
-            code: Codes.MGS_1007,
-            message: Messages.MGS_1007,
-            data: massageShop
+            data: {
+                shopId: massageShop._id,
+                shopName: massageShop.shopName,
+                shopAddress: massageShop.shopAddress,
+                telephone: massageShop.telephone,
+                openTime: massageShop.openTime,
+                closeTime: massageShop.closeTime,
+                createdAt: massageShop.createdAt,
+                updatedAt: massageShop.updatedAt
+            }
         });
     } catch (error) {
-        res.status(StatusCodes.SERVER_ERROR).json({
+        console.error('Error:', error);
+        return res.status(StatusCodes.SERVER_ERROR).json({
             status: StatusMessages.FAILED,
-            message: error.message || StatusMessages.SERVER_ERROR
+            message: error.message || Messages.SERVER_ERROR
+        });
+    }
+}
+
+export async function deleteMassageShop(req, res) {
+    try {
+        const { shopId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(shopId)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.MGS_1004,
+                message: Messages.MGS_1004,
+            });
+        }
+
+        if (!shopId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.VAL_4001,
+                message: Messages.VAL_4001
+            });
+        }
+
+        const massageShop = await MassageShopMongooseModel.findById(shopId);
+
+        if (!massageShop) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: StatusMessages.FAILED,
+                code: Codes.MGS_1004,
+                message: Messages.MGS_1004
+            });
+        }
+
+        await MassageShopMongooseModel.findByIdAndDelete(shopId);
+
+        return res.status(StatusCodes.OK).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.MGS_1005,
+            message: Messages.MGS_1001
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: error.message || Messages.SERVER_ERROR
+        });
+    }
+}
+
+export async function updateMassageShop(req, res) {
+    try {
+        const { shopId } = req.params;
+        const { shopName, shopAddress, telephone, openTime, closeTime } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(shopId)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.MGS_1004,
+                message: Messages.MGS_1004,
+            });
+        }
+
+
+        if (!shopId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.VAL_4001,
+                message: Messages.VAL_4001
+            });
+        }
+
+        if (!shopName || !shopAddress || !telephone || !openTime || !closeTime) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.VAL_4001,
+                message: Messages.VAL_4001
+            });
+        }
+
+        const massageShop = await MassageShopMongooseModel.findById(shopId);
+
+        if (!massageShop) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: StatusMessages.FAILED,
+                code: Codes.MGS_1004,
+                message: Messages.MGS_1004
+            });
+
+        }
+
+        const existingShop = await MassageShopMongooseModel.findOne({ shopName, _id: { $ne: shopId } });
+
+        if (existingShop) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.MGS_1002,
+                message: Messages.MGS_1002
+            });
+        }
+
+        // Update the shop's details
+        massageShop.shopName = shopName;
+        massageShop.shopAddress = shopAddress;
+        massageShop.telephone = telephone;
+        massageShop.openTime = openTime;
+        massageShop.closeTime = closeTime;
+
+        // Save the updated shop
+        await massageShop.save();
+
+        return res.status(StatusCodes.OK).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.MGS_1006,
+            message: "Massage shop successfully updated",
+            data: {
+                shopId: massageShop._id,
+                shopName: massageShop.shopName,
+                shopAddress: massageShop.shopAddress,
+                telephone: massageShop.telephone,
+                openTime: massageShop.openTime,
+                closeTime: massageShop.closeTime,
+                createdAt: massageShop.createdAt,
+                updatedAt: massageShop.updatedAt
+            }
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: error.message || "An error occurred while updating the massage shop"
         });
     }
 }

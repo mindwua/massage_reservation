@@ -53,7 +53,6 @@ export const Codes = Object.freeze({
   MGS_1002: "MGS_1002",
   MGS_1003: "MGS_1003",
   MGS_1004: "MGS_1004",
-  MGS_1005: "MGS_1005",
 
 });
 
@@ -81,7 +80,6 @@ export const Messages = Object.freeze({
   MGS_1002: "The Massage Shops Already Exists: The name already exists in the system.",
   MGS_1003: "You do not have permission to create a massage shop",
   MGS_1004: "Massage shop not found",
-  MGS_1005: "Massage shop retrieved successfully",
 
   // Validation Messages
   VAL_4001: "Required fields are missing. Please fill in all the necessary fields.",
