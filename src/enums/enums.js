@@ -67,8 +67,8 @@ export const Messages = Object.freeze({
 
   // Reservation Messages
   RSV_3001: "Reservation created successfully",
-  RSV_3001: "Reservation creation failed",
-  RSV_3001: "Reservation creation failed: Shop not found",
+  RSV_3002: "Reservation creation failed",
+  RSV_3003: "Reservation creation failed: Shop not found",
 
   // Validation Messages
   VAL_4001: "Required fields are missing. Please fill in all the necessary fields.",

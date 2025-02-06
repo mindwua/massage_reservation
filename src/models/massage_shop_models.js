@@ -13,12 +13,12 @@ class MassageShopServiceModel {
   static getSchema() {
     return new mongoose.Schema(
       {
-        shopId: { type: BigInt, required: true },
+        shopId: { type: String, required: true },
         shopName: { type: String, required: true },
         shopAddress: { type: String, required: true },
         telephone: { type: String, required: true },
-        openTime: { type: Boolean, default: false },
-        closeTime: { type: Boolean, default: false },
+        openTime: { type: String, default: false },
+        closeTime: { type: String, default: false },
       },
       { timestamps: true }
     );
