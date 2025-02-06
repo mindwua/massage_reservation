@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 
 function Reservation() {
   const [shopId, setShopId] = useState("");
-  const [dateTime, setDateTime] = useState(dayjs());
+  const [date, setDateTime] = useState(dayjs());
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState("");
@@ -76,8 +76,8 @@ function Reservation() {
       return navigate("/login");
     }
 
-    const formattedDateTime = dateTime.format("DD/MM/YYYY HH:mm");
-    const payload = { shopId, dateTime: formattedDateTime };
+    const formattedDateTime = date.format("DD-MM-YYYY HH:mm");
+    const payload = { shopId, date: formattedDateTime };
 
     try {
       setLoading(true);
@@ -192,7 +192,7 @@ function Reservation() {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DateTimePicker
                 label="Select Date & Time"
-                value={dateTime}
+                value={date}
                 onChange={(newValue) => setDateTime(newValue)}
                 minDateTime={dayjs()}
                 sx={{
