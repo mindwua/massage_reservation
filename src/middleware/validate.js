@@ -8,7 +8,7 @@ const validateBody = (schema) => (req, res, next) => {
         const { error } = schema.validate(req.body, { abortEarly: false });
 
         if (error) {
-             res.status(StatusCodes.BAD_REQUEST).json({
+             return res.status(StatusCodes.BAD_REQUEST).json({
                 success: StatusMessages.FAILED,
                 code: Codes.VAL_4001,
                 message: Messages.VAL_4001,
@@ -18,7 +18,7 @@ const validateBody = (schema) => (req, res, next) => {
         next();
     } catch (e) {
         logger.error(JSON.stringify(e))
-        res.status(StatusCodes.BAD_REQUEST).json({
+        return res.status(StatusCodes.BAD_REQUEST).json({
             success: StatusMessages.FAILED,
             code: Codes.VAL_4001,
             message: Messages.VAL_4001,
