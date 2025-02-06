@@ -1,16 +1,26 @@
 
-import { Codes, Enums, Messages } from "../enums/enums.js";
-import { ReservationMongooseModel, ReservationServiceModel } from "../models/account_models copy.js";
+import { Codes, Enums, Messages, StatusCodes, StatusMessages } from "../enums/enums.js";
+import { ReservationMongooseModel, ReservationServiceModel } from "../models/reservation_models.js";
 import { MassageShopMongooseModel } from "../models/massage_shop_models.js";
 import logger from "../utils/logger_utils.js";
 
+async function validateShop(shopId) {
+    const found =  MassageShopMongooseModel.findOne({shopId: shopId})
+    if (found) {
+        return true
+    } 
+    throw new Error("Shop not found")
+}
+
 export async function bookingReservation(req, res) {
     try {
-        const reservation = new ReservationServiceModel(
+                const reservationModel = new ReservationServiceModel(
             req.body.date,
             parseInt(req.body.shopId)
         ) 
-        const result = await MassageShopMongooseModel.findOne({shopId: reservation.shopId})
+        const result = await validateShop(reservationModel.shopId)
+        const reservation =  await ReservationMongooseModel.find({date: reservationModel.date})
+        console.log(reservation)
         if (result) {
             await ReservationMongooseModel.create(reservation)
             res.status(Enums.OK).json({
@@ -29,10 +39,10 @@ export async function bookingReservation(req, res) {
    
     } catch (e) {
         logger.error(e)
-        res.status(Enums.SERVER_ERROR).json({
-            status: Enums.FAILED,
-            code: Codes.RS_010,
-            message: Messages.RS_010,
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            code: Codes.RSV_3001,
+            message: Messages.RSV_3001,
         });
     }
 
