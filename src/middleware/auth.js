@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { isTokenBlacklisted } from './token_blacklist.js';
-import { Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
+import { Enums, Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
+import logger from '../utils/logger_utils.js';
 
 const verifyToken = async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
@@ -16,7 +17,7 @@ const verifyToken = async (req, res, next) => {
     try {
         const isBlacklisted = await isTokenBlacklisted(token);
         if (isBlacklisted) {
-            return res.status(StatusCodes.UNAUTHORIZED).json({
+             return res.status(StatusCodes.UNAUTHORIZED).json({
                 status: StatusMessages.FAILED,
                 code: Codes.TKN_6002,
                 message: Messages.TKN_6002,
@@ -27,7 +28,7 @@ const verifyToken = async (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({
+         return res.status(StatusCodes.UNAUTHORIZED).json({
             status: StatusMessages.FAILED,
             code: Codes.TKN_6002,
             message: Messages.TKN_6002,
