@@ -65,3 +65,78 @@ export async function createMassageShop(req, res) {
 
     }
 }
+
+export async function getAllMassageShops(req, res) {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const skip = (page - 1) * limit;
+
+        const massageShops = await MassageShopMongooseModel.find()
+            .skip(skip)
+            .limit(limit);
+
+        if (!massageShops || massageShops.length === 0) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: StatusMessages.FAILED,
+                message: "No massage shops found"
+            });
+        }
+
+        const totalShops = await MassageShopMongooseModel.countDocuments();
+
+        const formattedShops = massageShops.map(shop => ({
+            _id: shop._id.toString(),
+            shopId: shop.shopId,
+            shopName: shop.shopName,
+            shopAddress: shop.shopAddress,
+            telephone: shop.telephone,
+            openTime: shop.openTime,
+            closeTime: shop.closeTime
+        }));
+
+        return res.status(StatusCodes.OK).json({
+            count: totalShops,
+            page: page,
+            totalPages: Math.ceil(totalShops / limit),
+            shops: formattedShops
+
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: error.message || "An error occurred while fetching massage shops"
+        });
+    }
+}
+
+
+export async function getMassageShopById(req, res) {
+    try {
+        const { shopId } = req.params;
+
+        const massageShop = await MassageShopMongooseModel.findById(shopId);
+
+        if (!massageShop) {
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: StatusMessages.FAILED,
+                code: Codes.MGS_1006,
+                message: Messages.MGS_1006
+            });
+        }
+
+        res.status(StatusCodes.SUCCESS).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.MGS_1007,
+            message: Messages.MGS_1007,
+            data: massageShop
+        });
+    } catch (error) {
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: error.message || StatusMessages.SERVER_ERROR
+        });
+    }
+}

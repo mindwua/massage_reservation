@@ -19,7 +19,7 @@ class MassageShopServiceModel {
         telephone: {
           type: String,
           required: true,
-          match: [/^\+?[0-9]{7,15}$/, Messages.VAL_4002]
+          match: [/^\+?[0-9]{7,15}$/, Messages.VL]
         },
         openTime: { type: String, required: true },
         closeTime: { type: String, required: true },
