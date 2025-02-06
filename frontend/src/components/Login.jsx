@@ -22,7 +22,7 @@ function LoginForm() {
     event.preventDefault();
 
     if (!email || !password) {
-      setError("กรุณากรอกข้อมูลให้ครบถ้วน");
+      setError("Please fill in all the required information.");
       return;
     }
 
@@ -41,10 +41,10 @@ function LoginForm() {
       console.error("Error:", error);
       if (error.response) {
         const errorMessage =
-          error.response.data.msg || "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";
+          error.response.data.message || "An error occurred while logging in.";
         setError(errorMessage);
       } else {
-        setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        setError("An error occurred while connecting.");
       }
     } finally {
       setLoading(false);

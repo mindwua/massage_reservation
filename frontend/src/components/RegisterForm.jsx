@@ -7,6 +7,8 @@ import {
   Box,
   Typography,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+
 
 function RegisterForm() {
   const [name, setName] = useState("");
@@ -17,10 +19,13 @@ function RegisterForm() {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState("");
 
+    const navigate = useNavigate();
+  
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!name || !email || !password || !telephone) {
-      setError("กรุณากรอกข้อมูลให้ครบถ้วน");
+      setError("Please fill in all the required information.");
       return;
     }
 
@@ -29,14 +34,17 @@ function RegisterForm() {
       setLoading(true);
       const res = await axios.post("/api/v1/register", payload);
       setResponse(res.data);
+
+      navigate("/login");
+
     } catch (error) {
       console.error("Error:", error);
       if (error.response) {
         const errorMessage =
-          error.response.data.message || "เกิดข้อผิดพลาดในการส่งข้อมูล";
+          error.response.data.message || "An error occurred while sending the data.";
         setError(errorMessage);
       } else {
-        setError("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        setError("An error occurred while connecting.");
       }
     } finally {
       setLoading(false);
@@ -51,7 +59,7 @@ function RegisterForm() {
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
-        height: "50vh",
+        height: "40vh",
         padding: 8,
       }}
     >
@@ -149,6 +157,22 @@ function RegisterForm() {
               "Register"
             )}
           </Button>
+
+                    <Typography
+                      sx={{
+                        marginTop: 2,
+                        textAlign: "center",
+                        color: "#FF1493",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
+                      }}
+                      onClick={() => navigate("/login")} 
+                    >
+                      Sing In 
+                    </Typography>
         </form>
       </Box>
     </Box>
