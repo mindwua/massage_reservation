@@ -11,7 +11,7 @@ class ReservationServiceModel {
   static getSchema() {
     return new mongoose.Schema(
       {
-        date: { type: String, required: true },
+        date: { type: Date, required: true },
         shopId: { type: String, required: true },
         userId: { type: String, required: true },
         status: { type: String, required: true , default: "Pending"},

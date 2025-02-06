@@ -5,12 +5,15 @@ import { MassageShopMongooseModel } from "../models/massage_shop_models.js";
 import logger from "../utils/logger_utils.js";
 
 async function validateShop(shopId) {
-    const found =  MassageShopMongooseModel.findOne({shopId: shopId})
+    logger.info(`shopId >>>> ${shopId}`)
+    const found =  await MassageShopMongooseModel.findOne({_id: shopId})
     if (found) {
-        return true
+        logger.info(`validate shop >>> ${JSON.stringify(found)}`)
+        return found
     } 
-    throw new Error("Shop not found")
+    throw Error(Messages.RSV_3001)
 }
+
 
 export async function bookingReservation(req, res) {
     try {
