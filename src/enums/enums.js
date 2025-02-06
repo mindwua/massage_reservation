@@ -40,6 +40,9 @@ export const Codes = Object.freeze({
 
   // Validation Codes
   VAL_4001: "VAL_4001",
+  VAL_4002: "VAL_4002",
+  VAL_4003: "VAL_4003",
+  VAL_4004: "VAL_4004",
 
   // Logout Codes
   LOT_5001: "LOT_5001",
@@ -53,6 +56,9 @@ export const Codes = Object.freeze({
   MGS_1002: "MGS_1002",
   MGS_1003: "MGS_1003",
   MGS_1004: "MGS_1004",
+
+  //General
+  GNR_1001: "GNR_1001",
 
 });
 
@@ -72,8 +78,8 @@ export const Messages = Object.freeze({
 
   // Reservation Messages
   RSV_3001: "Reservation created successfully",
-  RSV_3001: "Reservation creation failed",
-  RSV_3001: "Reservation creation failed: Shop not found",
+  RSV_3002: "Reservation creation failed",
+  RSV_3003: "Reservation creation failed: Shop not found",
 
   // Massage Shops
   MGS_1001: "Massage Shops created successfully",
@@ -84,6 +90,8 @@ export const Messages = Object.freeze({
   // Validation Messages
   VAL_4001: "Required fields are missing. Please fill in all the necessary fields.",
   VAL_4002: "Invalid phone number format",
+  VAL_4003: "Invalid shopId format",
+  VAL_4004: `Invalid data format`,
 
   // Logout Messages
   LOT_5001: "Logout successful",
@@ -91,5 +99,8 @@ export const Messages = Object.freeze({
   // Permission Messages
   TKN_6001: "Access denied. No token provided.",
   TKN_6002: "Invaild or session expired",
+
+  //General Messages
+  GNR_1001: "Internal Server Error",
 
 });
