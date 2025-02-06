@@ -7,8 +7,7 @@ import logger from "../utils/logger_utils.js";
 
 async function validateShop(shopId) {
     try {
-        const found = await MassageShopMongooseModel.findOne({ shopId: shopId })
-
+        const found = await MassageShopMongooseModel.find({ shopId: shopId })
         if (found) {
             return true
         }
@@ -85,7 +84,6 @@ export async function bookingReservation(req, res) {
         //     });
         // }
 
-        console.log(result)
         if (result) {
             const canBook = await checkPendingReservationsForDate(reservationModel.shopId, reservationModel.userId, formattedDate);
             if (!canBook) {
@@ -95,7 +93,6 @@ export async function bookingReservation(req, res) {
                     message: Messages.RSV_3004
                 });
             }
-
             await ReservationMongooseModel.create(reservationModel)
             logger.info("Reservation created successfully")
             logger.info(req.body.date)
@@ -122,4 +119,21 @@ export async function bookingReservation(req, res) {
         });
     }
 
+}
+
+export function getReservation(req, res) {
+    try {
+        if ( req.query.userId) {
+            console.log(req.query.userId)
+        } else {
+            console.log('get all')
+        }
+    }catch (e) {
+        logger.error(e)
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            code: Codes.GNR_1001,
+            message: Messages.GNR_1001,
+        });
+    }
 }
