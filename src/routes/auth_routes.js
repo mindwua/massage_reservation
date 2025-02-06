@@ -8,4 +8,5 @@ routerAuth.post("/logout", verifyToken, logoutUser);
 routerAuth.get('/verifyToken', verifyToken, verifyTokenHandler);
 
 
+
 export default routerAuth;

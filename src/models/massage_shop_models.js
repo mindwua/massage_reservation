@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
+import { Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
+
 
 class MassageShopServiceModel {
-  constructor(shopId, shopName, shopAddress, telephone, openTime, closeTime) {
-    this.shopId = shopId;
+  constructor(shopName, shopAddress, telephone, openTime, closeTime) {
     this.shopName = shopName;
     this.shopAddress = shopAddress;
     this.telephone = telephone;
@@ -13,12 +14,15 @@ class MassageShopServiceModel {
   static getSchema() {
     return new mongoose.Schema(
       {
-        shopId: { type: BigInt, required: true },
         shopName: { type: String, required: true },
         shopAddress: { type: String, required: true },
-        telephone: { type: String, required: true },
-        openTime: { type: Boolean, default: false },
-        closeTime: { type: Boolean, default: false },
+        telephone: {
+          type: String,
+          required: true,
+          match: [/^\+?[0-9]{7,15}$/, Messages.VL]
+        },
+        openTime: { type: String, required: true },
+        closeTime: { type: String, required: true },
       },
       { timestamps: true }
     );
