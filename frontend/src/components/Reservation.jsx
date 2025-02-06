@@ -10,50 +10,10 @@ import {
   Button,
   CircularProgress,
   Box,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
+  TextField,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
-const shops = [
-  {
-    id: "1",
-    name: "Relax Haven Spa",
-    hours: "10:00 AM - 10:00 PM",
-    phone: "02-234-3409",
-    address: "123 Sukhumvit Rd, Bangkok",
-  },
-  {
-    id: "2",
-    name: "Zen Thai Massage",
-    hours: "09:00 AM - 09:00 PM",
-    phone: "02-987-6543",
-    address: "88 Silom Rd, Bangkok",
-  },
-  {
-    id: "3",
-    name: "Tranquil Touch",
-    hours: "08:00 AM - 08:00 PM",
-    phone: "02-456-7890",
-    address: "56 Sathorn Rd, Bangkok",
-  },
-  {
-    id: "4",
-    name: "Serene Spa",
-    hours: "11:00 AM - 11:00 PM",
-    phone: "02-321-5678",
-    address: "99 Rama IV Rd, Bangkok",
-  },
-  {
-    id: "5",
-    name: "Blissful Retreat",
-    hours: "07:00 AM - 07:00 PM",
-    phone: "02-765-4321",
-    address: "77 Ratchada Rd, Bangkok",
-  },
-];
 
 function Reservation() {
   const [shopId, setShopId] = useState("");
@@ -61,7 +21,8 @@ function Reservation() {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState("");
-
+  const [shops, setShops] = useState([]);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -71,45 +32,73 @@ function Reservation() {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          setError("Please log in before fetching the shops.");
+          navigate("/login");
+          return;
+        }
+
+        const res = await axios.get("/api/v1/massage-shops", {
+          headers: {
+            Authorization: `Bearer ${token}`, 
+          },
+        });
+        setShops(res.data.shops);
+      } catch (err) {
+        console.error("Error fetching shops:", err);
+        setError("Failed to load shops. Please try again.");
+      }
+    };
+
+    fetchShops();
+  }, [navigate]);
+
   const handleLogout = async () => {
     localStorage.removeItem("authToken");
     navigate("/login");
   };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     if (!shopId) {
       setError("Please select a shop before making a reservation.");
       return;
     }
-  
+
     const token = localStorage.getItem("authToken");
     if (!token) {
       setError("Please log in before making a reservation.");
       return navigate("/login");
     }
-  
-    const payload = { shopId, dateTime: dateTime.toISOString() };
-  
+
+    const formattedDateTime = dateTime.format("DD/MM/YYYY HH:mm");
+    const payload = { shopId, dateTime: formattedDateTime };
+
     try {
       setLoading(true);
-      setError(""); 
+      setError("");
       const res = await axios.post("/api/v1/booking", payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       setResponse(res.data);
-      setError(""); 
+      setError("");
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "An error occurred while making the reservation. Please try again.";
-      setError(errorMessage); 
+      const errorMessage =
+        err.response?.data?.message ||
+        "An error occurred while making the reservation. Please try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
-  
 
-  const selectedShop = shops.find((shop) => shop.id === shopId);
+  const selectedShop = shops.find((shop) => shop.shopId === shopId);
 
   return (
     <>
@@ -175,30 +164,27 @@ function Reservation() {
           )}
 
           <form onSubmit={handleSubmit}>
-            <FormControl fullWidth sx={{ marginBottom: 2 }}>
-              <InputLabel>Choose a Shop</InputLabel>
-              <Select
-                value={shopId}
-                onChange={(e) => setShopId(e.target.value)}
-              >
-                {shops.map((shop) => (
-                  <MenuItem key={shop.id} value={shop.id}>
-                    {shop.name} ({shop.hours})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Autocomplete
+              value={shops.find((shop) => shop.shopId === shopId) || null}
+              onChange={(event, newValue) => setShopId(newValue ? newValue.shopId : "")}
+              options={shops}
+              getOptionLabel={(option) => `${option.shopName} (${option.openTime} - ${option.closeTime})`}
+              renderInput={(params) => <TextField {...params} label="Choose a Shop" />}
+              isOptionEqualToValue={(option, value) => option.shopId === value.shopId}
+              fullWidth
+              sx={{ marginBottom: 2 }}
+            />
 
             {selectedShop && (
               <Box sx={{ marginBottom: 2, padding: 2, bgcolor: "#f9f9f9", borderRadius: 2 }}>
                 <Typography variant="body1">
-                  <strong>📍 Address:</strong> {selectedShop.address}
+                  <strong>📍 Address:</strong> {selectedShop.shopAddress}
                 </Typography>
                 <Typography variant="body1">
-                  <strong>📞 Phone:</strong> {selectedShop.phone}
+                  <strong>📞 Phone:</strong> {selectedShop.telephone}
                 </Typography>
                 <Typography variant="body1">
-                  <strong>🕒 Open Hours:</strong> {selectedShop.hours}
+                  <strong>🕒 Open Hours:</strong> {selectedShop.openTime} - {selectedShop.closeTime}
                 </Typography>
               </Box>
             )}
