@@ -6,11 +6,17 @@ import logger from "../utils/logger_utils.js";
 
 
 async function validateShop(shopId) {
-    const found = MassageShopMongooseModel.findOne({ shopId: shopId })
-    if (found) {
-        return true
+    try {
+        const found = await MassageShopMongooseModel.findOne({ shopId: shopId })
+
+        if (found) {
+            return true
+        }
+        return false
+    }catch (e) {
+        throw new Error("Shop not found")
     }
-    throw new Error("Shop not found")
+
 }
 
 function convertDateToISO(dateStr) {
@@ -60,7 +66,6 @@ export async function bookingReservation(req, res) {
     try {
 
         const formattedDate = convertDateToISO(req.body.date);
-        console.log(formattedDate);
         const reservationModel = new ReservationServiceModel(
             formattedDate,
             req.body.shopId,
@@ -80,7 +85,7 @@ export async function bookingReservation(req, res) {
         //     });
         // }
 
-
+        console.log(result)
         if (result) {
             const canBook = await checkPendingReservationsForDate(reservationModel.shopId, reservationModel.userId, formattedDate);
             if (!canBook) {
@@ -103,8 +108,8 @@ export async function bookingReservation(req, res) {
         } else {
             res.status(StatusCodes.NOT_FOUND).json({
                 status: StatusMessages.FAILED,
-                code: Codes.RSV_3001,
-                message: Messages.RSV_3001,
+                code: Codes.RSV_3003,
+                message: Messages.RSV_3003,
             });
         }
 
