@@ -121,13 +121,33 @@ export async function bookingReservation(req, res) {
 
 }
 
-export function getReservation(req, res) {
+export async function getReservation(req, res) {
     try {
-        if ( req.query.userId) {
-            console.log(req.query.userId)
+        console.log(req.user)
+        let result
+        const userId =  req.user.userId
+        const isAdmin = req.user.isAdmin
+        if (req.user.isAdmin) {
+            if (req.query.shopId || req.query.status) {
+                 result = await ReservationServiceModel.runAggregation(isAdmin, req.query.shopId, req.query.status, userId)
+                
+            } else {
+                 result = await  ReservationServiceModel.runAggregation(isAdmin)
+            }
         } else {
-            console.log('get all')
+            if (req.query.shopId || req.query.status) {
+                 result = await ReservationServiceModel.runAggregation(isAdmin, req.query.shopId, req.query.status, userId)
+             } else {
+                 result = await  ReservationServiceModel.runAggregation(isAdmin)
+             }
         }
+        res.status(StatusCodes.OK).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.RSV_3005,
+            message: Messages.RSV_3005,
+            data: result
+        });
+
     }catch (e) {
         logger.error(e)
         res.status(StatusCodes.SERVER_ERROR).json({
