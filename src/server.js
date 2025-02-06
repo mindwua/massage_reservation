@@ -5,6 +5,7 @@ import connectDB from "./utils/mongo_utils.js";
 import logger from "./utils/logger_utils.js";
 import routerReservation from "./routes/reservation_routes.js";
 import routerAuth from './routes/auth_routes.js';
+import routerMassageShops from "./routes/massage_shops.js";
 import redisClient from './utils/redis_utils.js';
 
 dotenv.config({ path: "./src/config/config.env" });
@@ -12,7 +13,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use("/api/v1", routerAccount, routerAuth, routerReservation);
+app.use("/api/v1", routerAccount, routerAuth, routerReservation, routerMassageShops);
 
 connectDB(logger);
 redisClient.connect();
