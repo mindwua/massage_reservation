@@ -4,6 +4,7 @@ import { ReservationMongooseModel, ReservationServiceModel } from "../models/res
 import { MassageShopMongooseModel } from "../models/massage_shop_models.js";
 import logger from "../utils/logger_utils.js";
 import mongoose from 'mongoose';
+import {sendSlackMessage} from "../utils/slack.js";
 
 async function validateShop(shopId) {
     try {
@@ -95,13 +96,13 @@ export async function bookingReservation(req, res) {
             }
             await ReservationMongooseModel.create(reservationModel)
             logger.info("Reservation created successfully")
-            logger.info(req.body.date)
             res.status(StatusCodes.OK).json({
                 status: StatusMessages.SUCCESS,
                 code: Codes.RSV_3001,
                 message: Messages.RSV_3001,
-                data: {}
+                data: reservationModel
             });
+            sendSlackMessage(JSON.stringify(reservationModel))
         } else {
             res.status(StatusCodes.NOT_FOUND).json({
                 status: StatusMessages.FAILED,
