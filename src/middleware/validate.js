@@ -26,5 +26,25 @@ const validateBody = (schema) => (req, res, next) => {
 
 };
 
+const validateParam = (schema) => (req, res, next) => {
+    try {
+        const { error } = schema.validate(req.params , { abortEarly: false });
+        if (error) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                success: StatusMessages.FAILED,
+                code: Codes.VAL_4004,
+                message: Messages.VAL_4004,
+                data: error.details.map((err) => err.message),
+            });
+        }
+        next();
+    } catch (e) {
+        return res.status(StatusCodes.SERVER_ERROR).json({
+            success: StatusMessages.SERVER_ERROR,
+            code: Codes.GNR_1001,
+            message: Messages.GNR_1001
+        });
+    }
+}
 
-export { validateBody };
+export { validateBody, validateParam };
