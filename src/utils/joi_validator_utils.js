@@ -14,3 +14,7 @@ export const bookingSchema = Joi.object({
             'any.required': `"date" is a required field`
         })
 });
+
+export const deleteReservationSchema = Joi.object({
+    bookingId: Joi.string().regex(/^BKD-[0-9]{8}$/).required()
+})

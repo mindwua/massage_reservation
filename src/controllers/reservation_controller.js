@@ -161,32 +161,21 @@ export async function getReservation(req, res) {
 export async function deleteReservation(req, res) {
     try {      
           const { bookingId } = req.params;
-    
-            if (!mongoose.Types.ObjectId.isValid(bookingId)) {
-                return res.status(StatusCodes.BAD_REQUEST).json({
-                    status: StatusMessages.FAILED,
-                    code: Codes.MGS_1004,
-                    message: Messages.MGS_1004,
-                });
-            }
-    
-    
-            const reseration = await ReservationMongooseModel.findById(shopId);
-            logger.warn(reseration)
+        logger.info(`bookingId >>>> ${bookingId}`)
+            const reseration = await ReservationMongooseModel.findOneAndDelete({ bookingId: bookingId});
             if (!reseration) {
                 return res.status(StatusCodes.NOT_FOUND).json({
                     status: StatusMessages.FAILED,
-                    code: Codes.MGS_1004,
-                    message: Messages.MGS_1004
+                    code: Codes.RSV_3007,
+                    message: Messages.RSV_3007
                 });
             }
-    
-            // await MassageShopMongooseModel.findByIdAndDelete(shopId);
+
     
             return res.status(StatusCodes.OK).json({
                 status: StatusMessages.SUCCESS,
-                code: Codes.MGS_1005,
-                message: Messages.MGS_1001
+                code: Codes.RSV_3008,
+                message: Messages.RSV_3008
             });
 
     } catch (e) {
