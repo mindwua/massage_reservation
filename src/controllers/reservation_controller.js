@@ -3,7 +3,7 @@ import { Codes, Enums, Messages, StatusCodes, StatusMessages } from "../enums/en
 import { ReservationMongooseModel, ReservationServiceModel } from "../models/reservation_models.js";
 import { MassageShopMongooseModel } from "../models/massage_shop_models.js";
 import logger from "../utils/logger_utils.js";
-
+import mongoose from 'mongoose';
 
 async function validateShop(shopId) {
     try {
@@ -135,10 +135,10 @@ export async function getReservation(req, res) {
                  result = await  ReservationServiceModel.runAggregation(isAdmin)
             }
         } else {
-            if (req.query.shopId || req.query.status) {
+            if (req.query.shopId || req.query.statu) {
                  result = await ReservationServiceModel.runAggregation(isAdmin, req.query, userId)
              } else {
-                 result = await  ReservationServiceModel.runAggregation(isAdmin)
+                 result = await  ReservationServiceModel.runAggregation(isAdmin, null, userId)
              }
         }
         res.status(StatusCodes.OK).json({
@@ -149,6 +149,47 @@ export async function getReservation(req, res) {
         });
 
     }catch (e) {
+        logger.error(e)
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            code: Codes.GNR_1001,
+            message: Messages.GNR_1001,
+        });
+    }
+}
+
+export async function deleteReservation(req, res) {
+    try {      
+          const { bookingId } = req.params;
+    
+            if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+                return res.status(StatusCodes.BAD_REQUEST).json({
+                    status: StatusMessages.FAILED,
+                    code: Codes.MGS_1004,
+                    message: Messages.MGS_1004,
+                });
+            }
+    
+    
+            const reseration = await ReservationMongooseModel.findById(shopId);
+            logger.warn(reseration)
+            if (!reseration) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    status: StatusMessages.FAILED,
+                    code: Codes.MGS_1004,
+                    message: Messages.MGS_1004
+                });
+            }
+    
+            // await MassageShopMongooseModel.findByIdAndDelete(shopId);
+    
+            return res.status(StatusCodes.OK).json({
+                status: StatusMessages.SUCCESS,
+                code: Codes.MGS_1005,
+                message: Messages.MGS_1001
+            });
+
+    } catch (e) {
         logger.error(e)
         res.status(StatusCodes.SERVER_ERROR).json({
             status: StatusMessages.FAILED,
