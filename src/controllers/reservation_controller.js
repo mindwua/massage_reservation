@@ -172,8 +172,6 @@ export async function deleteReservation(req, res) {
                     message: Messages.RSV_3007
                 });
             }
-
-    
             return res.status(StatusCodes.OK).json({
                 status: StatusMessages.SUCCESS,
                 code: Codes.RSV_3008,
@@ -188,4 +186,33 @@ export async function deleteReservation(req, res) {
             message: Messages.GNR_1001,
         });
     }
+}
+
+export async function updateReservation(req, res) {
+    try {
+        const { bookingId } = req.params;
+        const { isAdmin, userId } = req.user;
+        logger.info(`bookingId >>>> ${bookingId}`)
+            const reseration = await ReservationServiceModel.updateWithRole(isAdmin, userId, bookingId, req.body)
+            if (!reseration) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    status: StatusMessages.FAILED,
+                    code: Codes.RSV_3009,
+                    message: Messages.RSV_3009
+                });
+            }
+
+            return res.status(StatusCodes.OK).json({
+                status: StatusMessages.SUCCESS,
+                code: Codes.RSV_3010,
+                message: Messages.RSV_3010
+            });
+    } catch (e) {
+        logger.error(e)
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            code: Codes.GNR_1001,
+            message: Messages.GNR_1001,
+        });
+    }   
 }
