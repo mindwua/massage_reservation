@@ -42,6 +42,8 @@ export const Codes = Object.freeze({
   RSV_3006: "RSV_3006",
   RSV_3007: "RSV_3007",
   RSV_3008: "RSV_3008",
+  RSV_3009: "RSV_3008",
+  RSV_3010: "RSV_3008",
 
 
   // Validation Codes
@@ -91,6 +93,9 @@ export const Messages = Object.freeze({
   RSV_3006: "Get reservation failed",
   RSV_3007: "Delete reservation failed: Reservation not found",
   RSV_3008: "Delete reservation successfully",
+  RSV_3009: "Update reservation failed: Reservation not found",
+  RSV_3010: "Update reservation successfully",
+
 
 
   // Massage Shops
