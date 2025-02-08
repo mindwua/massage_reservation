@@ -1,85 +1,26 @@
-.view-booking-container {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    background-color: #f1f1f1; /* พื้นหลังของ container */
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  
-  .booking-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #e597dd; /* พื้นหลังของตาราง */
-  }
-  
-  .booking-table th, .booking-table td {
-    padding: 14px 20px;
-    text-align: left;
-    font-size: 16px;
-    border: none; /* ลบเส้นกรอบ */
-  }
-  
-  .booking-table th {
-    background-color: #e84bd0; /* สีพื้นหลังของ header เป็นสีน้ำเงินเข้ม */
-    color: white;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-  
-  .booking-table tr:nth-child(even) {
-    background-color: #e597dd; /* สีพื้นหลังของแถวที่คู่ */
-  }
-  
-  .booking-table tr:hover {
-    background-color: #e869d9; /* สีพื้นหลังเมื่อ hover แถว */
-  }
-  
-  .booking-table .actions {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    align-items: center;
-  }
-  
-  .booking-table button {
-    background-color: #0288d1; /* สีปุ่มเป็นสีน้ำเงินเข้ม */
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .booking-table button:hover {
-    background-color: #01579b; /* สีปุ่มเมื่อ hover */
-  }
-  
-  .booking-table td {
-    vertical-align: middle;
-  }
-  
-  .booking-table th, .booking-table td {
-    width: 12.5%;
-  }
-  
-  .booking-table th:nth-child(7),
-  .booking-table td:nth-child(7) {
-    font-weight: bold;
-    color: white;
-    text-align: center;
-  }
-  
-  .booking-table th:nth-child(8),
-  .booking-table td:nth-child(8) {
-    width: 18%;
-  }
-  
+.booking-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.booking-table th {
+  background-color: #f4a1d1; /* สีชมพูอ่อน */
+  color: white;
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.booking-table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+.booking-table tr:nth-child(even) {
+  background-color: #fdf2f8; /* สีชมพูอ่อน */
+}
+
+.booking-table tr:hover {
+  background-color: #ffe0ec; /* สีชมพูเข้มขึ้นเมื่อ hover */
+}

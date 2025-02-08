@@ -88,6 +88,8 @@ function Reservation() {
 
       setResponse(res.data);
       setError("");
+
+      navigate("/booking");
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
@@ -192,7 +194,7 @@ function Reservation() {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DateTimePicker
                 label="Select Date & Time"
-                value={date}
+                value={null}
                 onChange={(newValue) => setDateTime(newValue)}
                 minDateTime={dayjs()}
                 sx={{

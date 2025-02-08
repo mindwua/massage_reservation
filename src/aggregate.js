@@ -18,7 +18,7 @@ const runAggregation = async () => {
     try {
         await connectDB(console);
 
-        console.log('🔍 Running Aggregation...');
+        console.log('Running Aggregation...');
 
         const results = await Reservation.aggregate([
             {
