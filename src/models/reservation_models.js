@@ -31,8 +31,6 @@ class ReservationServiceModel {
   static runAggregation = async (isAdmin , reqQuery, userId) => {
     try {
       logger.info("🔍 Running Aggregation...");
-      console.log(reqQuery)
-      console.log('===')
       const matchStage = {};
 
       if (userId && !isAdmin) matchStage.userId = userId;
@@ -82,6 +80,18 @@ class ReservationServiceModel {
       throw new Error(error)
     }
   };
+
+  static deleteWithRole(isAdmin, userId, bookingId) {
+    try {
+      if(isAdmin) {
+        return ReservationMongooseModel.findOneAndDelete({ bookingId: bookingId });
+      } else {
+        return ReservationMongooseModel.findOneAndDelete({ bookingId: bookingId, userId: userId });
+      }
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }
 
 const ReservationMongooseModel = mongoose.model(

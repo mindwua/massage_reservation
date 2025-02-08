@@ -1,7 +1,7 @@
 
 import { Codes, Enums, Messages, StatusCodes, StatusMessages } from "../enums/enums.js";
 import { ReservationMongooseModel, ReservationServiceModel } from "../models/reservation_models.js";
-import { MassageShopMongooseModel } from "../models/massage_shop_models.js";
+import { MassageShopMongooseModel, MassageShopServiceModel } from "../models/massage_shop_models.js";
 import logger from "../utils/logger_utils.js";
 import mongoose from 'mongoose';
 import {sendSlackMessage} from "../utils/slack.js";
@@ -161,9 +161,10 @@ export async function getReservation(req, res) {
 
 export async function deleteReservation(req, res) {
     try {      
-          const { bookingId } = req.params;
+        const { bookingId } = req.params;
+        const { isAdmin, userId } = req.user;
         logger.info(`bookingId >>>> ${bookingId}`)
-            const reseration = await ReservationMongooseModel.findOneAndDelete({ bookingId: bookingId});
+            const reseration = await ReservationServiceModel.deleteWithRole(isAdmin, userId, bookingId)
             if (!reseration) {
                 return res.status(StatusCodes.NOT_FOUND).json({
                     status: StatusMessages.FAILED,
