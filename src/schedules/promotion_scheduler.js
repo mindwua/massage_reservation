@@ -30,4 +30,4 @@ export const sendPromotion = async () => {
 };
 
 // cron.schedule('0 7 * * *', sendPromotion);
-cron.schedule('*/1 * * * *', sendPromotion); 
+// cron.schedule('*/1 * * * *', sendPromotion); 
