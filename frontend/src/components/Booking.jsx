@@ -87,8 +87,10 @@ const ViewBooking = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      fetchData();
       setLoading(true);
 
+      // ดึงข้อมูลล่าสุดอีกครั้ง
       fetchData();
 
       setBookings((prev) =>
@@ -118,6 +120,26 @@ const ViewBooking = () => {
       });
 
       setBookings((prev) => prev.filter((b) => b.bookingId !== bookingId));
+    } catch (err) {
+      handleSessionExpired(err);
+    }
+  };
+  const confirmDelete = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      await axios.delete(`/api/v1/booking/${deleteBookingId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setBookings((prev) =>
+        prev.filter((b) => b.bookingId !== deleteBookingId)
+      );
+      setOpenDeleteDialog(false);
     } catch (err) {
       handleSessionExpired(err);
     }
@@ -155,8 +177,6 @@ const ViewBooking = () => {
     ) {
       setError("Session Expired.");
       setErrorPopupOpen(true);
-    } else {
-      setError("An unexpected error occurred.");
     }
   };
 
