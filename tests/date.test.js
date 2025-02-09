@@ -1,4 +1,4 @@
-import { formatDate } from "../src/utils/date_utils.js"; // Adjust the path if necessary
+import { formatDate, convertDateToISO } from "../src/utils/date_utils.js"; // Adjust the path if necessary
 
 describe("formatDate function", () => {
   
@@ -39,4 +39,13 @@ describe("formatDate function", () => {
     expect(() => formatDate(undefined)).toThrow("Invalid ISO date format");
   });
 
+});
+
+
+describe("formatDate function", () => {
+  
+  test("should correctly format a valid ISO date string", () => {
+    const isoDate = "10-02-2025 03:15";
+    expect(convertDateToISO(isoDate)).toBe("2025-02-10T03:15:00.000Z");
+  });
 });

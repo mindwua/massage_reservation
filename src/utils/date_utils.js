@@ -26,3 +26,19 @@ export function formatDate(isoDateStr) {
     throw new Error("Invalid ISO date format");
   }
 }
+
+
+export function convertDateToISO(dateStr) {
+  console.log(dateStr)
+  const [day, month, year] = dateStr.split(" ")[0].split("-");
+  const [hour, minute] = dateStr.split(" ")[1].split(":");
+
+  const isoString = `${year}-${month}-${day}T${hour}:${minute}:00.000Z`;
+
+  const date = new Date(isoString);
+  if (isNaN(date)) {
+      throw new Error("Invalid date format");
+  }
+
+  return date.toISOString();
+}
