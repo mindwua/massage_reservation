@@ -151,9 +151,6 @@ const ViewBooking = () => {
           <Button color="inherit" onClick={() => navigate("/reservation")}>
             Reservation
           </Button>
-          <Button color="inherit" onClick={() => navigate("/booking")}>
-            Booking
-          </Button>
           <Button color="inherit" onClick={handleLogout}>
           Logout
           </Button>
