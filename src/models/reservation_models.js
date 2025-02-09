@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import logger from "../utils/logger_utils.js";
+import { formatDate } from "../utils/date_utils.js";
 class ReservationServiceModel {
   constructor(date, shopId, userId) {
     this.date = new Date(date);
@@ -40,7 +41,7 @@ class ReservationServiceModel {
 
       logger.info(`matchStage >>>>> ${JSON.stringify(matchStage)}`);
 
-      const results = await ReservationMongooseModel.aggregate([
+      let results = await ReservationMongooseModel.aggregate([
         { $match: matchStage },
         {
           $addFields: {
@@ -73,8 +74,10 @@ class ReservationServiceModel {
           },
         },
       ]);
-
-      console.log("Aggregation Results:", results.length);
+      results = results.map((reservation) => ({
+        ...reservation,
+        date: formatDate(reservation.date), // Convert to string format
+      }));
       return results
     } catch (error) {
       throw new Error(error)
@@ -98,13 +101,13 @@ class ReservationServiceModel {
       const matchStage = {};
 
       if(req.date) matchStage.date = req.date;
-      if(req.shopId) matchStage.status = req.shopId;
+      if(req.shopId) matchStage.shopId =  req.shopId;
       if(req.status) matchStage.status = req.status;
       console.log(matchStage)
       if(isAdmin) {
-        return  await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, matchStage);
+        return  await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage}, {new: true});
       } else {
-        return await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {matchStage });
+        return await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, {new: true});
       }
     } catch (error) {
       throw new Error(error);
