@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import logger from "../utils/logger_utils.js";
+import { formatDate } from "../utils/date_utils.js";
 class ReservationServiceModel {
   constructor(date, shopId, userId) {
     this.date = new Date(date);
@@ -40,7 +41,7 @@ class ReservationServiceModel {
 
       logger.info(`matchStage >>>>> ${JSON.stringify(matchStage)}`);
 
-      const results = await ReservationMongooseModel.aggregate([
+      let results = await ReservationMongooseModel.aggregate([
         { $match: matchStage },
         {
           $addFields: {
@@ -73,8 +74,10 @@ class ReservationServiceModel {
           },
         },
       ]);
-
-      console.log("Aggregation Results:", results.length);
+      results = results.map((reservation) => ({
+        ...reservation,
+        date: formatDate(reservation.date), // Convert to string format
+      }));
       return results
     } catch (error) {
       throw new Error(error)
