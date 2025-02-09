@@ -164,7 +164,6 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
           shopDetails,
           result.bookingId,
         );
-        console.log(formattedResponse)
         return formattedResponse
       }
 
