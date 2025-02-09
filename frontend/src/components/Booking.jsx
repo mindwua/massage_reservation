@@ -12,7 +12,6 @@ import {
   DialogTitle,
   TextField,
   Box,
-  CircularProgress,
   Autocomplete,
   Grid,
   Paper,
@@ -84,29 +83,44 @@ const ViewBooking = () => {
         date: date.format("DD-MM-YYYY HH:mm"),
       };
 
-      await axios.put(`/api/v1/booking/${selectedBookingID}`, updatedData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      fetchData();
-      setLoading(true);
-
-      // ดึงข้อมูลล่าสุดอีกครั้ง
-      fetchData();
-
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.bookingId === selectedBookingID ? { ...b, ...updatedData } : b
-        )
+      const res = await axios.put(
+        `/api/v1/booking/${selectedBookingID}`,
+        updatedData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
-      setOpenEditDialog(false);
-      setLoading(true);
+      console.log("API Response:", res.data); // ดูข้อมูล response
+
+      if (res.data.status === "success") {
+        const updatedBooking = res.data.data; // ใช้ข้อมูลที่ได้รับจาก API
+
+        // อัปเดต state ของการจองใหม่
+        setBookings((prevBookings) =>
+          prevBookings.map((b) =>
+            b.bookingId === selectedBookingID
+              ? { ...b, ...updatedBooking } // แทนที่ข้อมูลเดิมด้วยข้อมูลที่ได้รับจาก API
+              : b
+          )
+        );
+
+        // อัปเดตการแสดงข้อมูลร้าน
+        setSelectedShopId(updatedBooking.shopId);
+        setDate(dayjs(updatedBooking.date));
+
+        // ปิด Dialog แก้ไข
+        setOpenEditDialog(false);
+      } else {
+        setError("Failed to update the booking.");
+        setErrorPopupOpen(true);
+      }
     } catch (err) {
       handleSessionExpired(err);
       setOpenEditDialog(false);
     }
   };
+
   const handleDelete = (bookingID) => {
     setSelectedBookingID(bookingID);
     setOpenDialog(true);

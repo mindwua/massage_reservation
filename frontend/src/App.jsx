@@ -1,12 +1,12 @@
 // src/App.jsx
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './components/Login';
-import Reservation from './components/Reservation';
-import RegisterForm from "./components/RegisterForm";
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Login from "./components/Login";
+import Reservation from "./components/Reservation";
+import Register from "./components/Register";
 import Booking from "./components/Booking";
 
-import './App.css'; 
+import "./App.css";
 
 function App() {
   return (
@@ -17,8 +17,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/Booking" element={<Booking />} />
           <Route path="/Reservation" element={<Reservation />} />
-          <Route path="/register" element={<RegisterForm />} />
-/        </Routes>
+          <Route path="/register" element={<Register />} />/{" "}
+        </Routes>
       </div>
     </Router>
   );
