@@ -36,7 +36,6 @@ const ViewBooking = () => {
   const [error, setError] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
 
-  // Load bookings and shops
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -91,26 +90,9 @@ const ViewBooking = () => {
         }
       );
 
-      console.log("API Response:", res.data); // ดูข้อมูล response
-
       if (res.data.status === "success") {
-        const updatedBooking = res.data.data; // ใช้ข้อมูลที่ได้รับจาก API
-
-        // อัปเดต state ของการจองใหม่
-        setBookings((prevBookings) =>
-          prevBookings.map((b) =>
-            b.bookingId === selectedBookingID
-              ? { ...b, ...updatedBooking } // แทนที่ข้อมูลเดิมด้วยข้อมูลที่ได้รับจาก API
-              : b
-          )
-        );
-
-        // อัปเดตการแสดงข้อมูลร้าน
-        setSelectedShopId(updatedBooking.shopId);
-        setDate(dayjs(updatedBooking.date));
-
-        // ปิด Dialog แก้ไข
         setOpenEditDialog(false);
+        window.location.reload();
       } else {
         setError("Failed to update the booking.");
         setErrorPopupOpen(true);
@@ -135,13 +117,11 @@ const ViewBooking = () => {
         return;
       }
 
-      // Perform the deletion request
       const res = await axios.delete(`/api/v1/booking/${selectedBookingID}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (res.data.status === "success") {
-        // Success: Remove the booking from the state without fetching data again
+      if (res.status === 200) {
         setBookings((prevBookings) =>
           prevBookings.filter(
             (booking) => booking.bookingId !== selectedBookingID
@@ -149,18 +129,17 @@ const ViewBooking = () => {
         );
 
         setSuccessMessage("Booking deleted successfully!");
-        setErrorPopupOpen(true); // Show success dialog
+        setErrorPopupOpen(true);
       } else {
         setError("Failed to delete the booking.");
-        setErrorPopupOpen(true); // Show error dialog
+        setErrorPopupOpen(true);
       }
     } catch (err) {
       console.error("Error during deletion:", err);
 
-      // Handle session expiration or other errors
       handleSessionExpired(err);
     } finally {
-      setOpenDialog(false); // Always close the confirmation dialog after attempting deletion
+      setOpenDialog(false);
     }
   };
 
@@ -378,6 +357,7 @@ const ViewBooking = () => {
               value={date}
               onChange={(newValue) => setDate(newValue)}
               minDateTime={dayjs()}
+              format="DD/MM/YYYY HH:mm"
               sx={{ width: "100%" }}
             />
           </LocalizationProvider>

@@ -30,8 +30,9 @@ class MassageShopServiceModel {
 
   static async fetchShopDetails(shopId) {
     try {
-      const shopDetails = await MassageShopMongooseModel.findOne(
+      let shopDetails = await MassageShopMongooseModel.findOne(
         { _id: new mongoose.Types.ObjectId(shopId) }).select("-_id").lean();
+        shopDetails.shopId = shopId
       return shopDetails
     }catch(e) {
       throw new Error('Shop not found')
