@@ -4,12 +4,15 @@ import {  MassageShopServiceModel } from "./massage_shop_models.js";
 import { formatDate, convertDateToISO } from "../utils/date_utils.js";
 import { Status } from "../enums/enums.js";
 class ReservationServiceModel {
-  constructor(date, shopId, userId, shopDetails) {
+  constructor(date, shopId, userId, shopDetails , bookingId) {
     this.date = new Date(date);
-    this.shopId = shopId;
+    //* TODO
+    if (shopId !== null && shopId !== undefined) {
+      this.shopId = shopId;
+    }
     this.userId = userId;
     this.status = "Pending";
-    this.bookingId = this.generateBookingId();
+    this.bookingId = bookingId ?? this.generateBookingId() ;
     this.shopDetails = shopDetails
   }
 
@@ -145,18 +148,19 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
       // if(req.status) matchStage.status = req.status;
       console.log(matchStage)
       if(isAdmin) {
-         result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage}, {new: true});
+         result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage}, );
         
       } else {
-        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, {new: true});
+        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, );
       }
       const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
 
       const formattedResponse = new ReservationServiceModel(
         result.date,
-        result.shopId,
+        null,
         result.userId,
-        shopDetails
+        shopDetails,
+        result.bookingId,
       );
       return formattedResponse
 
