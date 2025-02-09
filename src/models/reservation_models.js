@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import logger from "../utils/logger_utils.js";
 import {  MassageShopServiceModel } from "./massage_shop_models.js";
 import { formatDate, convertDateToISO } from "../utils/date_utils.js";
+import { Status } from "../enums/enums.js";
 class ReservationServiceModel {
   constructor(date, shopId, userId, shopDetails) {
     this.date = new Date(date);
@@ -42,17 +43,26 @@ class ReservationServiceModel {
 
 
 
-static createBooking = async (reservation) => {
+static createBooking = async (reservation, startOfDay, endOfDay) => {
   try {
     const shopDetails = await MassageShopServiceModel.fetchShopDetails(reservation.shopId)
-    const createdReservation =await ReservationMongooseModel.create(reservation);
-    const formattedResponse = new ReservationServiceModel(
-      createdReservation.date,
-      createdReservation.shopId,
-      createdReservation.userId,
-      shopDetails
-    );
-    return formattedResponse;
+    
+    const checkPendingReservations = await ReservationMongooseModel.find({
+      date: { $gte: startOfDay, $lte: endOfDay } , status: Status.PENDING
+    }).countDocuments();
+    
+    if(checkPendingReservations < 3) {
+      const createdReservation =await ReservationMongooseModel.create(reservation);
+      const formattedResponse = new ReservationServiceModel(
+        createdReservation.date,
+        createdReservation.shopId,
+        createdReservation.userId,
+        shopDetails
+      );
+      return formattedResponse;
+    }
+
+
   } catch (error) {
     throw new Error(error);
   }
@@ -132,7 +142,7 @@ static createBooking = async (reservation) => {
       let result
       if(req.date) matchStage.date = convertDateToISO(req.date);
       if(req.shopId) matchStage.shopId =  req.shopId;
-      if(req.status) matchStage.status = req.status;
+      // if(req.status) matchStage.status = req.status;
       console.log(matchStage)
       if(isAdmin) {
          result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage}, {new: true});

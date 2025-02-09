@@ -24,7 +24,7 @@ export const bodyPutSchema = Joi.object({
       "string.empty": `"date" cannot be an empty field`,
       "any.required": `"date" is a required field`,
     }),
-    status: Joi.string().valid("Pending", "Completed", "Cancelled"),
+    // status: Joi.string().valid("Pending", "Completed", "Cancelled"),
 });
 
 export const bookingRunningSchema = Joi.object({
