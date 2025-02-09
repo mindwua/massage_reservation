@@ -87,6 +87,10 @@ const ViewBooking = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      setLoading(true);
+
+      fetchData();
+
       setBookings((prev) =>
         prev.map((b) =>
           b.bookingId === selectedBookingID ? { ...b, ...updatedData } : b
@@ -94,8 +98,9 @@ const ViewBooking = () => {
       );
 
       setOpenEditDialog(false);
+      setLoading(true);
     } catch (err) {
-      handleError(err);
+      handleSessionExpired(err);
       setOpenEditDialog(false);
     }
   };
@@ -114,7 +119,7 @@ const ViewBooking = () => {
 
       setBookings((prev) => prev.filter((b) => b.bookingId !== bookingId));
     } catch (err) {
-      handleError(err);
+      handleSessionExpired(err);
     }
   };
 
@@ -126,35 +131,40 @@ const ViewBooking = () => {
         return;
       }
 
-      await axios.post(
-        "/api/v1/logout",
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.post("/api/v1/logout", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       localStorage.removeItem("authToken");
       navigate("/login");
     } catch (err) {
       console.error("Error during logout:", err);
       setError("Failed to log out. Please try again.");
+      handleSessionExpired(err);
     }
   };
 
   const [errorPopupOpen, setErrorPopupOpen] = useState(false);
 
-  const handleError = (error) => {
+  const handleSessionExpired = (error) => {
     if (
       error.response &&
       (error.response.status === 401 || error.response.status === 403)
     ) {
-      setError("Invalid or session expired.");
+      setError("Session Expired.");
       setErrorPopupOpen(true);
     } else {
       setError("An unexpected error occurred.");
+    }
+  };
+
+  const handleReservationClick = async () => {
+    try {
+      navigate("/reservation");
+    } catch (error) {
+      handleSessionExpired(error);
     }
   };
 
@@ -163,7 +173,7 @@ const ViewBooking = () => {
       <AppBar position="fixed" sx={{ bgcolor: "#FF1493" }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}></Typography>
-          <Button color="inherit" onClick={() => navigate("/reservation")}>
+          <Button color="inherit" onClick={handleReservationClick}>
             Reservation
           </Button>
           <Button color="inherit" onClick={handleLogout}>
@@ -209,9 +219,7 @@ const ViewBooking = () => {
                         }}
                       >
                         <td style={{ padding: "10px" }}>{booking.bookingId}</td>
-                        <td style={{ padding: "10px" }}>
-                          {new Date(booking.date).toLocaleString()}
-                        </td>
+                        <td style={{ padding: "10px" }}>{booking.date}</td>
                         <td style={{ padding: "10px" }}>{shop?.shopName}</td>
                         <td style={{ padding: "10px" }}>{shop?.shopAddress}</td>
                         <td style={{ padding: "10px" }}>{shop?.telephone}</td>
@@ -324,7 +332,7 @@ const ViewBooking = () => {
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DateTimePicker
               label="Select Date & Time"
-              value={null}
+              value={date}
               onChange={(newValue) => setDate(newValue)}
               minDateTime={dayjs()}
               sx={{ width: "100%" }}
@@ -336,7 +344,7 @@ const ViewBooking = () => {
             Cancel
           </Button>
           <Button onClick={confirmEdit} color="primary">
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Save"}
+            Save
           </Button>
         </DialogActions>
       </Dialog>
