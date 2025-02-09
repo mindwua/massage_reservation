@@ -16,7 +16,6 @@ async function validateShop(shopId) {
     }catch (e) {
         throw new Error("Shop not found")
     }
-
 }
 
 function convertDateToISO(dateStr) {
@@ -64,7 +63,6 @@ async function checkPendingReservationsForDate(shopId, userId, date) {
 
 export async function bookingReservation(req, res) {
     try {
-
         const formattedDate = convertDateToISO(req.body.date);
         const reservationModel = new ReservationServiceModel(
             formattedDate,
@@ -94,13 +92,13 @@ export async function bookingReservation(req, res) {
                     message: Messages.RSV_3004
                 });
             }
-            await ReservationMongooseModel.create(reservationModel)
+            const result = await ReservationServiceModel.createBooking(reservationModel)
             logger.info("Reservation created successfully")
             res.status(StatusCodes.OK).json({
                 status: StatusMessages.SUCCESS,
                 code: Codes.RSV_3001,
                 message: Messages.RSV_3001,
-                data: reservationModel
+                data: result
             });
             sendSlackMessage(JSON.stringify(reservationModel))
         } else {
@@ -193,8 +191,8 @@ export async function updateReservation(req, res) {
         const { bookingId } = req.params;
         const { isAdmin, userId } = req.user;
         logger.info(`bookingId >>>> ${bookingId}`)
-            const reseration = await ReservationServiceModel.updateWithRole(isAdmin, userId, bookingId, req.body)
-            if (!reseration) {
+            const result = await ReservationServiceModel.updateWithRole(isAdmin, userId, bookingId, req.body)
+            if (!result) {
                 return res.status(StatusCodes.NOT_FOUND).json({
                     status: StatusMessages.FAILED,
                     code: Codes.RSV_3009,
@@ -205,7 +203,8 @@ export async function updateReservation(req, res) {
             return res.status(StatusCodes.OK).json({
                 status: StatusMessages.SUCCESS,
                 code: Codes.RSV_3010,
-                message: Messages.RSV_3010
+                message: Messages.RSV_3010,
+                data: result
             });
     } catch (e) {
         logger.error(e)
