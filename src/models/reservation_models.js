@@ -6,7 +6,6 @@ import { Status } from "../enums/enums.js";
 class ReservationServiceModel {
   constructor(date, shopId, userId, shopDetails , bookingId) {
     this.date = new Date(date);
-    //* TODO
     if (shopId !== null && shopId !== undefined) {
       this.shopId = shopId;
     }
@@ -143,6 +142,7 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
     try {
       const matchStage = {};
       let result
+      let formattedResponse
       if(req.date) matchStage.date = convertDateToISO(req.date);
       if(req.shopId) matchStage.shopId =  req.shopId;
       // if(req.status) matchStage.status = req.status;
@@ -153,15 +153,18 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
       } else {
         result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, );
       }
-      const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
+      if(result) {
+        const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
+        formattedResponse = new ReservationServiceModel(
+          result.date,
+          null,
+          result.userId,
+          shopDetails,
+          result.bookingId,
+        );
+        return formattedResponse
+      }
 
-      const formattedResponse = new ReservationServiceModel(
-        result.date,
-        null,
-        result.userId,
-        shopDetails,
-        result.bookingId,
-      );
       return formattedResponse
 
     } catch (error) {
