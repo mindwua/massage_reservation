@@ -161,7 +161,8 @@ const ViewBooking = () => {
                       <tr key={booking.bookingId} style={{ backgroundColor: "#fff", borderBottom: "1px solid #ccc" }}>
                         <td style={{ padding: "10px" }}>{booking.bookingId}</td>
                         <td style={{ padding: "10px" }}>
-                          {new Date(booking.date).toLocaleString()}
+                          {(booking.date)}
+                          {/* {new Date(booking.date).toLocaleString()} */}
                         </td>
                         <td style={{ padding: "10px" }}>{shop?.shopName}</td>
                         <td style={{ padding: "10px" }}>{shop?.shopAddress}</td>
