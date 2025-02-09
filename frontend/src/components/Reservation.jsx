@@ -22,7 +22,7 @@ function Reservation() {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState("");
   const [shops, setShops] = useState([]);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +44,7 @@ function Reservation() {
 
         const res = await axios.get("/api/v1/massage-shops", {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         });
         setShops(res.data.shops);
@@ -58,31 +58,31 @@ function Reservation() {
   }, [navigate]);
 
   const handleLogout = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-    
-        await axios.post(
-          "/api/v1/logout",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-    
-        localStorage.removeItem("authToken");
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
         navigate("/login");
-      } catch (err) {
-        console.error("Error during logout:", err);
-        setError("Failed to log out. Please try again.");
+        return;
       }
-    };
-    
+
+      await axios.post(
+        "/api/v1/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      localStorage.removeItem("authToken");
+      navigate("/login");
+    } catch (err) {
+      console.error("Error during logout:", err);
+      setError("Failed to log out. Please try again.");
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -115,6 +115,15 @@ function Reservation() {
       const errorMessage =
         err.response?.data?.message ||
         "An error occurred while making the reservation. Please try again.";
+
+      if (statusCode === 500) {
+        errorMessage = "Internal server error. Please try again later.";
+      } else if (statusCode === 403) {
+        errorMessage = "You don't have permission to make this reservation.";
+      } else {
+        errorMessage = err.response?.data?.message || errorMessage;
+      }
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -189,17 +198,32 @@ function Reservation() {
           <form onSubmit={handleSubmit}>
             <Autocomplete
               value={shops.find((shop) => shop.shopId === shopId) || null}
-              onChange={(event, newValue) => setShopId(newValue ? newValue.shopId : "")}
+              onChange={(event, newValue) =>
+                setShopId(newValue ? newValue.shopId : "")
+              }
               options={shops}
-              getOptionLabel={(option) => `${option.shopName} (${option.openTime} - ${option.closeTime})`}
-              renderInput={(params) => <TextField {...params} label="Choose a Shop" />}
-              isOptionEqualToValue={(option, value) => option.shopId === value.shopId}
+              getOptionLabel={(option) =>
+                `${option.shopName} (${option.openTime} - ${option.closeTime})`
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Choose a Shop" />
+              )}
+              isOptionEqualToValue={(option, value) =>
+                option.shopId === value.shopId
+              }
               fullWidth
               sx={{ marginBottom: 2 }}
             />
 
             {selectedShop && (
-              <Box sx={{ marginBottom: 2, padding: 2, bgcolor: "#f9f9f9", borderRadius: 2 }}>
+              <Box
+                sx={{
+                  marginBottom: 2,
+                  padding: 2,
+                  bgcolor: "#f9f9f9",
+                  borderRadius: 2,
+                }}
+              >
                 <Typography variant="body1">
                   <strong>📍 Address:</strong> {selectedShop.shopAddress}
                 </Typography>
@@ -207,7 +231,8 @@ function Reservation() {
                   <strong>📞 Phone:</strong> {selectedShop.telephone}
                 </Typography>
                 <Typography variant="body1">
-                  <strong>🕒 Open Hours:</strong> {selectedShop.openTime} - {selectedShop.closeTime}
+                  <strong>🕒 Open Hours:</strong> {selectedShop.openTime} -{" "}
+                  {selectedShop.closeTime}
                 </Typography>
               </Box>
             )}
@@ -251,7 +276,11 @@ function Reservation() {
                 },
               }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Reserve"}
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Reserve"
+              )}
             </Button>
           </form>
         </Box>

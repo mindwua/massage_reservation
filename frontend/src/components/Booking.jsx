@@ -92,9 +92,10 @@ const ViewBooking = () => {
           b.bookingId === selectedBookingID ? { ...b, ...updatedData } : b
         )
       );
+
       setOpenEditDialog(false);
     } catch (err) {
-      setError("Failed to update booking.");
+      handleError(err);
       setOpenEditDialog(false);
     }
   };
@@ -113,7 +114,7 @@ const ViewBooking = () => {
 
       setBookings((prev) => prev.filter((b) => b.bookingId !== bookingId));
     } catch (err) {
-      setError("Failed to delete booking.");
+      handleError(err);
     }
   };
 
@@ -124,7 +125,7 @@ const ViewBooking = () => {
         navigate("/login");
         return;
       }
-  
+
       await axios.post(
         "/api/v1/logout",
         {},
@@ -134,12 +135,26 @@ const ViewBooking = () => {
           },
         }
       );
-  
+
       localStorage.removeItem("authToken");
       navigate("/login");
     } catch (err) {
       console.error("Error during logout:", err);
       setError("Failed to log out. Please try again.");
+    }
+  };
+
+  const [errorPopupOpen, setErrorPopupOpen] = useState(false);
+
+  const handleError = (error) => {
+    if (
+      error.response &&
+      (error.response.status === 401 || error.response.status === 403)
+    ) {
+      setError("Invalid or session expired.");
+      setErrorPopupOpen(true);
+    } else {
+      setError("An unexpected error occurred.");
     }
   };
 
@@ -152,7 +167,7 @@ const ViewBooking = () => {
             Reservation
           </Button>
           <Button color="inherit" onClick={handleLogout}>
-          Logout
+            Logout
           </Button>
         </Toolbar>
       </AppBar>
@@ -165,7 +180,10 @@ const ViewBooking = () => {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Paper sx={{ padding: 2, backgroundColor: "#f8f8f8" }}>
-              <table className="booking-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table
+                className="booking-table"
+                style={{ width: "100%", borderCollapse: "collapse" }}
+              >
                 <thead>
                   <tr style={{ backgroundColor: "#FF1493", color: "#fff" }}>
                     <th style={{ padding: "10px" }}>Booking ID</th>
@@ -177,52 +195,79 @@ const ViewBooking = () => {
                     <th style={{ padding: "10px" }}>Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {bookings.map((booking) => {
-                    const shop = shops.find((shop) => shop.shopId === booking.shopId);
-                    return (
-                      <tr key={booking.bookingId} style={{ backgroundColor: "#fff", borderBottom: "1px solid #ccc" }}>
-                        <td style={{ padding: "10px" }}>{booking.bookingId}</td>
-                        <td style={{ padding: "10px" }}>
-                          {new Date(booking.date).toLocaleString()}
-                        </td>
-                        <td style={{ padding: "10px" }}>{shop?.shopName}</td>
-                        <td style={{ padding: "10px" }}>{shop?.shopAddress}</td>
-                        <td style={{ padding: "10px" }}>{shop?.telephone}</td>
-                        <td style={{ padding: "10px" }}>
-                          {shop?.openTime} - {shop?.closeTime}
-                        </td>
-                        <td style={{ padding: "10px" }}>
-                          <button
-                            onClick={() => handleEdit(booking)}
-                            style={{
-                              backgroundColor: "#FF1493",
-                              color: "#fff",
-                              border: "none",
-                              padding: "5px 10px",
-                              cursor: "pointer",
-                              marginRight: "5px",
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(booking.bookingId)}
-                            style={{
-                              backgroundColor: "#f44336",
-                              color: "#fff",
-                              border: "none",
-                              padding: "5px 10px",
-                              cursor: "pointer",
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
+                {bookings.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      style={{
+                        textAlign: "center",
+                        fontSize: "18px",
+                        color: "#FF1493",
+                      }}
+                    >
+                      No booking
+                    </td>
+                  </tr>
+                ) : (
+                  <tbody>
+                    {bookings.map((booking) => {
+                      const shop = shops.find(
+                        (shop) => shop.shopId === booking.shopId
+                      );
+                      return (
+                        <tr
+                          key={booking.bookingId}
+                          style={{
+                            backgroundColor: "#fff",
+                            borderBottom: "1px solid #ccc",
+                          }}
+                        >
+                          <td style={{ padding: "10px" }}>
+                            {booking.bookingId}
+                          </td>
+                          <td style={{ padding: "10px" }}>
+                            {new Date(booking.date).toLocaleString()}
+                          </td>
+                          <td style={{ padding: "10px" }}>{shop?.shopName}</td>
+                          <td style={{ padding: "10px" }}>
+                            {shop?.shopAddress}
+                          </td>
+                          <td style={{ padding: "10px" }}>{shop?.telephone}</td>
+                          <td style={{ padding: "10px" }}>
+                            {shop?.openTime} - {shop?.closeTime}
+                          </td>
+                          <td style={{ padding: "10px" }}>
+                            <button
+                              onClick={() => handleEdit(booking)}
+                              style={{
+                                backgroundColor: "#FF1493",
+                                color: "#fff",
+                                border: "none",
+                                padding: "5px 10px",
+                                cursor: "pointer",
+                                marginRight: "5px",
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(booking.bookingId)}
+                              style={{
+                                backgroundColor: "#f44336",
+                                color: "#fff",
+                                border: "none",
+                                padding: "5px 10px",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                )}
               </table>
             </Paper>
           </Grid>
@@ -231,77 +276,108 @@ const ViewBooking = () => {
 
       {/* Edit Dialog */}
       <Dialog
-  open={openEditDialog}
-  onClose={() => setOpenEditDialog(false)}
-  sx={{
-    "& .MuiDialog-paper": {
-      minWidth: "500px",  // กำหนดความกว้างของ dialog
-      minHeight: "100px", // กำหนดความสูงของ dialog
-      width: "100%",      // กำหนดให้ความกว้างเป็น 80% ของหน้าจอ
-      maxWidth: "500px", // กำหนดความกว้างสูงสุด
-      height: "20",    // ความสูงอัตโนมัติ
-    },
-  }}
->
-  <DialogTitle>Edit Booking</DialogTitle>
-  <DialogContent>
-    <Autocomplete
-      value={shops.find((shop) => shop.shopId === selectedShopId) || null}
-      onChange={(event, newValue) =>
-        setSelectedShopId(newValue ? newValue.shopId : "")
-      }
-      options={shops}
-      getOptionLabel={(option) =>
-        `${option.shopName} (${option.openTime} - ${option.closeTime})`
-      }
-      renderInput={(params) => (
-        <TextField {...params} label="Choose a Shop" />
-      )}
-      isOptionEqualToValue={(option, value) =>
-        option.shopId === value.shopId
-      }
-      fullWidth
-      sx={{ marginBottom: 2 }}
-    />
-    <Box>
-      {selectedShopId && (
-        <>
-          <p>
-            <LocationOnIcon /> Address:{" "}
-            {shops.find((shop) => shop.shopId === selectedShopId)?.shopAddress}
-          </p>
-          <p>
-            <PhoneIcon /> Phone:{" "}
-            {shops.find((shop) => shop.shopId === selectedShopId)?.telephone}
-          </p>
-          <p>
-            <AccessTimeIcon /> Open Hours:{" "}
-            {shops.find((shop) => shop.shopId === selectedShopId)?.openTime} -{" "}
-            {shops.find((shop) => shop.shopId === selectedShopId)?.closeTime}
-          </p>
-        </>
-      )}
-    </Box>
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DateTimePicker
-        label="Select Date & Time"
-        value={null}
-        onChange={(newValue) => setDate(newValue)}
-        minDateTime={dayjs()}
-        sx={{ width: "100%" }}
-      />
-    </LocalizationProvider>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setOpenEditDialog(false)} color="primary">
-      Cancel
-    </Button>
-    <Button onClick={confirmEdit} color="primary">
-      {loading ? <CircularProgress size={24} color="inherit" /> : "Save"}
-    </Button>
-  </DialogActions>
-</Dialog>
+        open={openEditDialog}
+        onClose={() => setOpenEditDialog(false)}
+        sx={{
+          "& .MuiDialog-paper": {
+            minWidth: "500px", // กำหนดความกว้างของ dialog
+            minHeight: "100px", // กำหนดความสูงของ dialog
+            width: "100%", // กำหนดให้ความกว้างเป็น 80% ของหน้าจอ
+            maxWidth: "500px", // กำหนดความกว้างสูงสุด
+            height: "20", // ความสูงอัตโนมัติ
+          },
+        }}
+      >
+        <DialogTitle>Edit Booking</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            value={shops.find((shop) => shop.shopId === selectedShopId) || null}
+            onChange={(event, newValue) =>
+              setSelectedShopId(newValue ? newValue.shopId : "")
+            }
+            options={shops}
+            getOptionLabel={(option) =>
+              `${option.shopName} (${option.openTime} - ${option.closeTime})`
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Choose a Shop" />
+            )}
+            isOptionEqualToValue={(option, value) =>
+              option.shopId === value.shopId
+            }
+            fullWidth
+            sx={{ marginBottom: 2 }}
+          />
+          <Box>
+            {selectedShopId && (
+              <>
+                <p>
+                  <LocationOnIcon /> Address:{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.shopAddress
+                  }
+                </p>
+                <p>
+                  <PhoneIcon /> Phone:{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.telephone
+                  }
+                </p>
+                <p>
+                  <AccessTimeIcon /> Open Hours:{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.openTime
+                  }{" "}
+                  -{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.closeTime
+                  }
+                </p>
+              </>
+            )}
+          </Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DateTimePicker
+              label="Select Date & Time"
+              value={null}
+              onChange={(newValue) => setDate(newValue)}
+              minDateTime={dayjs()}
+              sx={{ width: "100%" }}
+            />
+          </LocalizationProvider>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmEdit} color="primary">
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Save"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
+      <Dialog open={errorPopupOpen} onClose={() => setErrorPopupOpen(false)}>
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>
+          <p>{error}</p>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setErrorPopupOpen(false);
+              localStorage.removeItem("authToken");
+              navigate("/login");
+            }}
+            color="primary"
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
