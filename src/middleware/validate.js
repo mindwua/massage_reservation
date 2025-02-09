@@ -5,6 +5,7 @@ import logger from "../utils/logger_utils.js";
 
 const validateBody = (schema) => (req, res, next) => {
     try {
+        logger.info('Start validateBody')
         const { error } = schema.validate(req.body, { abortEarly: false });
 
         if (error) {

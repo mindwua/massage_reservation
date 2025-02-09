@@ -1,9 +1,10 @@
 
 import { Codes, Enums, Messages, StatusCodes, StatusMessages } from "../enums/enums.js";
 import { ReservationMongooseModel, ReservationServiceModel } from "../models/reservation_models.js";
-import { MassageShopMongooseModel } from "../models/massage_shop_models.js";
+import { MassageShopMongooseModel, MassageShopServiceModel } from "../models/massage_shop_models.js";
 import logger from "../utils/logger_utils.js";
 import mongoose from 'mongoose';
+import {sendSlackMessage} from "../utils/slack.js";
 
 async function validateShop(shopId) {
     try {
@@ -95,13 +96,13 @@ export async function bookingReservation(req, res) {
             }
             await ReservationMongooseModel.create(reservationModel)
             logger.info("Reservation created successfully")
-            logger.info(req.body.date)
             res.status(StatusCodes.OK).json({
                 status: StatusMessages.SUCCESS,
                 code: Codes.RSV_3001,
                 message: Messages.RSV_3001,
-                data: {}
+                data: reservationModel
             });
+            sendSlackMessage(JSON.stringify(reservationModel))
         } else {
             res.status(StatusCodes.NOT_FOUND).json({
                 status: StatusMessages.FAILED,
@@ -160,9 +161,10 @@ export async function getReservation(req, res) {
 
 export async function deleteReservation(req, res) {
     try {      
-          const { bookingId } = req.params;
+        const { bookingId } = req.params;
+        const { isAdmin, userId } = req.user;
         logger.info(`bookingId >>>> ${bookingId}`)
-            const reseration = await ReservationMongooseModel.findOneAndDelete({ bookingId: bookingId});
+            const reseration = await ReservationServiceModel.deleteWithRole(isAdmin, userId, bookingId)
             if (!reseration) {
                 return res.status(StatusCodes.NOT_FOUND).json({
                     status: StatusMessages.FAILED,
@@ -170,8 +172,6 @@ export async function deleteReservation(req, res) {
                     message: Messages.RSV_3007
                 });
             }
-
-    
             return res.status(StatusCodes.OK).json({
                 status: StatusMessages.SUCCESS,
                 code: Codes.RSV_3008,
@@ -186,4 +186,33 @@ export async function deleteReservation(req, res) {
             message: Messages.GNR_1001,
         });
     }
+}
+
+export async function updateReservation(req, res) {
+    try {
+        const { bookingId } = req.params;
+        const { isAdmin, userId } = req.user;
+        logger.info(`bookingId >>>> ${bookingId}`)
+            const reseration = await ReservationServiceModel.updateWithRole(isAdmin, userId, bookingId, req.body)
+            if (!reseration) {
+                return res.status(StatusCodes.NOT_FOUND).json({
+                    status: StatusMessages.FAILED,
+                    code: Codes.RSV_3009,
+                    message: Messages.RSV_3009
+                });
+            }
+
+            return res.status(StatusCodes.OK).json({
+                status: StatusMessages.SUCCESS,
+                code: Codes.RSV_3010,
+                message: Messages.RSV_3010
+            });
+    } catch (e) {
+        logger.error(e)
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            code: Codes.GNR_1001,
+            message: Messages.GNR_1001,
+        });
+    }   
 }
