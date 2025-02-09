@@ -1,0 +1,247 @@
+import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
+import axios from "axios";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Box,
+  CircularProgress,
+  Autocomplete,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import "./Booking.css";
+
+const ViewBooking = () => {
+  const navigate = useNavigate();
+  const [bookings, setBookings] = useState([]);
+  const [shops, setShops] = useState([]);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [selectedBookingID, setSelectedBookingID] = useState(null);
+  const [selectedShopId, setSelectedShopId] = useState("");
+  const [date, setDate] = useState(dayjs());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Load bookings and shops
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const bookingRes = await axios.get("/api/v1/booking", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setBookings(bookingRes.data.data);
+
+        const shopsRes = await axios.get("/api/v1/massage-shops", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setShops(shopsRes.data.shops);
+      } catch (err) {
+        setError("Failed to load data.");
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
+
+  const handleEdit = (booking) => {
+    setSelectedBookingID(booking.bookingId);
+    setSelectedShopId(booking.shopId);
+    setDate(dayjs(booking.date));
+    setOpenEditDialog(true);
+  };
+
+  const confirmEdit = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const updatedData = {
+        shopId: selectedShopId,
+        date: date.format("DD-MM-YYYY HH:mm"),
+      };
+
+      await axios.put(`/api/v1/booking/${selectedBookingID}`, updatedData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.bookingId === selectedBookingID ? { ...b, ...updatedData } : b
+        )
+      );
+      setOpenEditDialog(false);
+    } catch (err) {
+      setError("Failed to update booking.");
+      setOpenEditDialog(false);
+    }
+  };
+
+  const handleDelete = async (bookingId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      await axios.delete(`/api/v1/booking/${bookingId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setBookings((prev) => prev.filter((b) => b.bookingId !== bookingId));
+    } catch (err) {
+      setError("Failed to delete booking.");
+    }
+  };
+
+  return (
+    <>
+      <AppBar position="fixed" sx={{ bgcolor: "#FF1493" }}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}></Typography>
+          <Button color="inherit" onClick={() => navigate("/reservation")}>
+            Reservation
+          </Button>
+          <Button color="inherit" onClick={() => navigate("/booking")}>
+            Booking
+          </Button>
+          <Button
+            color="inherit"
+            onClick={() => localStorage.removeItem("authToken")}
+          >
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+
+      <div className="view-booking-container" style={{ marginTop: "70px" }}>
+        <h2>Booking Details</h2>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <table className="booking-table">
+          <thead>
+            <tr>
+              <th>Booking ID</th>
+              <th>Appointment</th>
+              <th>Shop Name</th>
+              <th>Shop Address</th>
+              <th>Telephone</th>
+              <th>Open-Close</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.map((booking) => {
+              const shop = shops.find((shop) => shop.shopId === booking.shopId);
+              return (
+                <tr key={booking.bookingId}>
+                  <td>{booking.bookingId}</td>
+                  <td>{new Date(booking.date).toLocaleString()}</td>
+                  <td>{shop?.shopName}</td>
+                  <td>{shop?.shopAddress}</td>
+                  <td>{shop?.telephone}</td>
+                  <td>
+                    {shop?.openTime} - {shop?.closeTime}
+                  </td>
+                  <td>
+                    <button onClick={() => handleEdit(booking)}>Edit</button>
+                    <button
+                      onClick={() => handleDelete(booking.bookingId)}
+                      style={{ marginLeft: "10px", color: "red" }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
+        <DialogTitle>Edit Booking</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            value={shops.find((shop) => shop.shopId === selectedShopId) || null}
+            onChange={(event, newValue) =>
+              setSelectedShopId(newValue ? newValue.shopId : "")
+            }
+            options={shops}
+            getOptionLabel={(option) =>
+              `${option.shopName} (${option.openTime} - ${option.closeTime})`
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Choose a Shop" />
+            )}
+            isOptionEqualToValue={(option, value) =>
+              option.shopId === value.shopId
+            }
+            fullWidth
+            sx={{ marginBottom: 2 }}
+          />
+          <Box>
+            {selectedShopId && (
+              <>
+                <p>
+                  Address:{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.shopAddress
+                  }
+                </p>
+                <p>
+                  Telephone:{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.telephone
+                  }
+                </p>
+              </>
+            )}
+          </Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DateTimePicker
+              label="Select Date & Time"
+              value={date}
+              onChange={(newValue) => setDate(newValue)}
+              minDateTime={dayjs()}
+              sx={{ width: "100%" }}
+            />
+          </LocalizationProvider>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmEdit} color="primary">
+            {loading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Save Changes"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+};
+
+export default ViewBooking;
