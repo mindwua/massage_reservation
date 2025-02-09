@@ -138,7 +138,7 @@ const ViewBooking = () => {
         <h2>Booking Details</h2>
         {error && <p style={{ color: "red" }}>{error}</p>}
 
-        {/* Using a Grid layout to make it look clean */}
+        {}
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Paper sx={{ padding: 2, backgroundColor: "#f8f8f8" }}>
