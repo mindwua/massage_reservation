@@ -117,6 +117,32 @@ const ViewBooking = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+  
+      await axios.post(
+        "/api/v1/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      localStorage.removeItem("authToken");
+      navigate("/login");
+    } catch (err) {
+      console.error("Error during logout:", err);
+      setError("Failed to log out. Please try again.");
+    }
+  };
+
   return (
     <>
       <AppBar position="fixed" sx={{ bgcolor: "#FF1493" }}>
@@ -128,8 +154,8 @@ const ViewBooking = () => {
           <Button color="inherit" onClick={() => navigate("/booking")}>
             Booking
           </Button>
-          <Button color="inherit" onClick={() => localStorage.removeItem("authToken")}>
-            Logout
+          <Button color="inherit" onClick={handleLogout}>
+          Logout
           </Button>
         </Toolbar>
       </AppBar>

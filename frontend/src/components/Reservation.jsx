@@ -58,10 +58,31 @@ function Reservation() {
   }, [navigate]);
 
   const handleLogout = async () => {
-    localStorage.removeItem("authToken");
-    navigate("/login");
-  };
-
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+    
+        await axios.post(
+          "/api/v1/logout",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+    
+        localStorage.removeItem("authToken");
+        navigate("/login");
+      } catch (err) {
+        console.error("Error during logout:", err);
+        setError("Failed to log out. Please try again.");
+      }
+    };
+    
   const handleSubmit = async (event) => {
     event.preventDefault();
 
