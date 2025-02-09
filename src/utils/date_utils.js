@@ -29,7 +29,6 @@ export function formatDate(isoDateStr) {
 
 
 export function convertDateToISO(dateStr) {
-  console.log(dateStr)
   const [day, month, year] = dateStr.split(" ")[0].split("-");
   const [hour, minute] = dateStr.split(" ")[1].split(":");
 
@@ -41,4 +40,16 @@ export function convertDateToISO(dateStr) {
   }
 
   return date.toISOString();
+}
+
+export function rangeDate(dateStr) {
+  try {
+    const startOfDay = dateStr.replace(/T.*Z/, "T00:00:00.000Z");
+    const endOfDay = dateStr.replace(/T.*Z/, "T23:59:59.999Z")
+  
+    return {startOfDay: startOfDay, endOfDay: endOfDay}
+  } catch (e) {
+    throw new Error("Invalid ISO date format");
+  }
+
 }
