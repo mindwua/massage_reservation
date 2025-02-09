@@ -87,14 +87,22 @@ const ViewBooking = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      fetchData();
+      setLoading(true);
+
+      // ดึงข้อมูลล่าสุดอีกครั้ง
+      fetchData();
+
       setBookings((prev) =>
         prev.map((b) =>
           b.bookingId === selectedBookingID ? { ...b, ...updatedData } : b
         )
       );
+
       setOpenEditDialog(false);
+      setLoading(true);
     } catch (err) {
-      setError("Failed to update booking.");
+      handleSessionExpired(err);
       setOpenEditDialog(false);
     }
   };
@@ -113,7 +121,70 @@ const ViewBooking = () => {
 
       setBookings((prev) => prev.filter((b) => b.bookingId !== bookingId));
     } catch (err) {
-      setError("Failed to delete booking.");
+      handleSessionExpired(err);
+    }
+  };
+  const confirmDelete = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      await axios.delete(`/api/v1/booking/${deleteBookingId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setBookings((prev) =>
+        prev.filter((b) => b.bookingId !== deleteBookingId)
+      );
+      setOpenDeleteDialog(false);
+    } catch (err) {
+      handleSessionExpired(err);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      await axios.post("/api/v1/logout", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      localStorage.removeItem("authToken");
+      navigate("/login");
+    } catch (err) {
+      console.error("Error during logout:", err);
+      setError("Failed to log out. Please try again.");
+      handleSessionExpired(err);
+    }
+  };
+
+  const [errorPopupOpen, setErrorPopupOpen] = useState(false);
+
+  const handleSessionExpired = (error) => {
+    if (
+      error.response &&
+      (error.response.status === 401 || error.response.status === 403)
+    ) {
+      setError("Session Expired.");
+      setErrorPopupOpen(true);
+    }
+  };
+
+  const handleReservationClick = async () => {
+    try {
+      navigate("/reservation");
+    } catch (error) {
+      handleSessionExpired(error);
     }
   };
 
@@ -122,13 +193,10 @@ const ViewBooking = () => {
       <AppBar position="fixed" sx={{ bgcolor: "#FF1493" }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}></Typography>
-          <Button color="inherit" onClick={() => navigate("/reservation")}>
+          <Button color="inherit" onClick={handleReservationClick}>
             Reservation
           </Button>
-          <Button color="inherit" onClick={() => navigate("/booking")}>
-            Booking
-          </Button>
-          <Button color="inherit" onClick={() => localStorage.removeItem("authToken")}>
+          <Button color="inherit" onClick={handleLogout}>
             Logout
           </Button>
         </Toolbar>
@@ -142,7 +210,10 @@ const ViewBooking = () => {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Paper sx={{ padding: 2, backgroundColor: "#f8f8f8" }}>
-              <table className="booking-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <table
+                className="booking-table"
+                style={{ width: "100%", borderCollapse: "collapse" }}
+              >
                 <thead>
                   <tr style={{ backgroundColor: "#FF1493", color: "#fff" }}>
                     <th style={{ padding: "10px" }}>Booking ID</th>
@@ -156,14 +227,19 @@ const ViewBooking = () => {
                 </thead>
                 <tbody>
                   {bookings.map((booking) => {
-                    const shop = shops.find((shop) => shop.shopId === booking.shopId);
+                    const shop = shops.find(
+                      (shop) => shop.shopId === booking.shopId
+                    );
                     return (
-                      <tr key={booking.bookingId} style={{ backgroundColor: "#fff", borderBottom: "1px solid #ccc" }}>
+                      <tr
+                        key={booking.bookingId}
+                        style={{
+                          backgroundColor: "#fff",
+                          borderBottom: "1px solid #ccc",
+                        }}
+                      >
                         <td style={{ padding: "10px" }}>{booking.bookingId}</td>
-                        <td style={{ padding: "10px" }}>
-                          {/* {new Date(booking.date).toLocaleString()} */}
-                          {booking.date}
-                        </td>
+                        <td style={{ padding: "10px" }}>{booking.date}</td>
                         <td style={{ padding: "10px" }}>{shop?.shopName}</td>
                         <td style={{ padding: "10px" }}>{shop?.shopAddress}</td>
                         <td style={{ padding: "10px" }}>{shop?.telephone}</td>
@@ -209,77 +285,108 @@ const ViewBooking = () => {
 
       {/* Edit Dialog */}
       <Dialog
-  open={openEditDialog}
-  onClose={() => setOpenEditDialog(false)}
-  sx={{
-    "& .MuiDialog-paper": {
-      minWidth: "500px",  // กำหนดความกว้างของ dialog
-      minHeight: "100px", // กำหนดความสูงของ dialog
-      width: "100%",      // กำหนดให้ความกว้างเป็น 80% ของหน้าจอ
-      maxWidth: "500px", // กำหนดความกว้างสูงสุด
-      height: "20",    // ความสูงอัตโนมัติ
-    },
-  }}
->
-  <DialogTitle>Edit Booking</DialogTitle>
-  <DialogContent>
-    <Autocomplete
-      value={shops.find((shop) => shop.shopId === selectedShopId) || null}
-      onChange={(event, newValue) =>
-        setSelectedShopId(newValue ? newValue.shopId : "")
-      }
-      options={shops}
-      getOptionLabel={(option) =>
-        `${option.shopName} (${option.openTime} - ${option.closeTime})`
-      }
-      renderInput={(params) => (
-        <TextField {...params} label="Choose a Shop" />
-      )}
-      isOptionEqualToValue={(option, value) =>
-        option.shopId === value.shopId
-      }
-      fullWidth
-      sx={{ marginBottom: 2 }}
-    />
-    <Box>
-      {selectedShopId && (
-        <>
-          <p>
-            <LocationOnIcon /> Address:{" "}
-            {shops.find((shop) => shop.shopId === selectedShopId)?.shopAddress}
-          </p>
-          <p>
-            <PhoneIcon /> Phone:{" "}
-            {shops.find((shop) => shop.shopId === selectedShopId)?.telephone}
-          </p>
-          <p>
-            <AccessTimeIcon /> Open Hours:{" "}
-            {shops.find((shop) => shop.shopId === selectedShopId)?.openTime} -{" "}
-            {shops.find((shop) => shop.shopId === selectedShopId)?.closeTime}
-          </p>
-        </>
-      )}
-    </Box>
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <DateTimePicker
-        label="Select Date & Time"
-        value={null}
-        onChange={(newValue) => setDate(newValue)}
-        minDateTime={dayjs()}
-        sx={{ width: "100%" }}
-      />
-    </LocalizationProvider>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setOpenEditDialog(false)} color="primary">
-      Cancel
-    </Button>
-    <Button onClick={confirmEdit} color="primary">
-      {loading ? <CircularProgress size={24} color="inherit" /> : "Save"}
-    </Button>
-  </DialogActions>
-</Dialog>
+        open={openEditDialog}
+        onClose={() => setOpenEditDialog(false)}
+        sx={{
+          "& .MuiDialog-paper": {
+            minWidth: "500px", // กำหนดความกว้างของ dialog
+            minHeight: "100px", // กำหนดความสูงของ dialog
+            width: "100%", // กำหนดให้ความกว้างเป็น 80% ของหน้าจอ
+            maxWidth: "500px", // กำหนดความกว้างสูงสุด
+            height: "20", // ความสูงอัตโนมัติ
+          },
+        }}
+      >
+        <DialogTitle>Edit Booking</DialogTitle>
+        <DialogContent>
+          <Autocomplete
+            value={shops.find((shop) => shop.shopId === selectedShopId) || null}
+            onChange={(event, newValue) =>
+              setSelectedShopId(newValue ? newValue.shopId : "")
+            }
+            options={shops}
+            getOptionLabel={(option) =>
+              `${option.shopName} (${option.openTime} - ${option.closeTime})`
+            }
+            renderInput={(params) => (
+              <TextField {...params} label="Choose a Shop" />
+            )}
+            isOptionEqualToValue={(option, value) =>
+              option.shopId === value.shopId
+            }
+            fullWidth
+            sx={{ marginBottom: 2 }}
+          />
+          <Box>
+            {selectedShopId && (
+              <>
+                <p>
+                  <LocationOnIcon /> Address:{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.shopAddress
+                  }
+                </p>
+                <p>
+                  <PhoneIcon /> Phone:{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.telephone
+                  }
+                </p>
+                <p>
+                  <AccessTimeIcon /> Open Hours:{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.openTime
+                  }{" "}
+                  -{" "}
+                  {
+                    shops.find((shop) => shop.shopId === selectedShopId)
+                      ?.closeTime
+                  }
+                </p>
+              </>
+            )}
+          </Box>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DateTimePicker
+              label="Select Date & Time"
+              value={date}
+              onChange={(newValue) => setDate(newValue)}
+              minDateTime={dayjs()}
+              sx={{ width: "100%" }}
+            />
+          </LocalizationProvider>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenEditDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmEdit} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
 
+      <Dialog open={errorPopupOpen} onClose={() => setErrorPopupOpen(false)}>
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>
+          <p>{error}</p>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setErrorPopupOpen(false);
+              localStorage.removeItem("authToken");
+              navigate("/login");
+            }}
+            color="primary"
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

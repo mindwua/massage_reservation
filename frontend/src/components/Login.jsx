@@ -16,7 +16,7 @@ function LoginForm() {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -147,7 +147,7 @@ function LoginForm() {
                 textDecoration: "underline",
               },
             }}
-            onClick={() => navigate("/register")} 
+            onClick={() => navigate("/register")}
           >
             Don't have an account? Register
           </Typography>

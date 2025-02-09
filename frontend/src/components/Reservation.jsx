@@ -12,18 +12,22 @@ import {
   Box,
   TextField,
   Autocomplete,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 function Reservation() {
   const [shopId, setShopId] = useState("");
-  const [date, setDateTime] = useState(dayjs());
+  const [date, setDateTime] = useState(null);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
   const [error, setError] = useState("");
   const [shops, setShops] = useState([]);
-  
   const navigate = useNavigate();
+  const [errorPopupOpen, setErrorPopupOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("authToken");
@@ -44,7 +48,7 @@ function Reservation() {
 
         const res = await axios.get("/api/v1/massage-shops", {
           headers: {
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         });
         setShops(res.data.shops);
@@ -57,9 +61,43 @@ function Reservation() {
     fetchShops();
   }, [navigate]);
 
+  const handleSessionExpired = (error) => {
+    if (
+      error.response &&
+      (error.response.status === 401 || error.response.status === 403)
+    ) {
+      setError("Session Expired.");
+      setErrorPopupOpen(true);
+    } else {
+      setError("An unexpected error occurred.");
+    }
+  };
+
   const handleLogout = async () => {
-    localStorage.removeItem("authToken");
-    navigate("/login");
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      await axios.post(
+        "/api/v1/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      localStorage.removeItem("authToken");
+      navigate("/login");
+    } catch (err) {
+      console.error("Error during logout:", err);
+      setError("Failed to log out. Please try again.");
+      handleSessionExpired(err);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -67,6 +105,11 @@ function Reservation() {
 
     if (!shopId) {
       setError("Please select a shop before making a reservation.");
+      return;
+    }
+
+    if (!date || !date.isValid()) {
+      setError("Please select a valid date and time for your reservation.");
       return;
     }
 
@@ -91,12 +134,7 @@ function Reservation() {
 
       navigate("/booking");
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        "An error occurred while making the reservation. Please try again.";
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
+      handleSessionExpired(err);
     }
   };
 
@@ -168,17 +206,32 @@ function Reservation() {
           <form onSubmit={handleSubmit}>
             <Autocomplete
               value={shops.find((shop) => shop.shopId === shopId) || null}
-              onChange={(event, newValue) => setShopId(newValue ? newValue.shopId : "")}
+              onChange={(event, newValue) =>
+                setShopId(newValue ? newValue.shopId : "")
+              }
               options={shops}
-              getOptionLabel={(option) => `${option.shopName} (${option.openTime} - ${option.closeTime})`}
-              renderInput={(params) => <TextField {...params} label="Choose a Shop" />}
-              isOptionEqualToValue={(option, value) => option.shopId === value.shopId}
+              getOptionLabel={(option) =>
+                `${option.shopName} (${option.openTime} - ${option.closeTime})`
+              }
+              renderInput={(params) => (
+                <TextField {...params} label="Choose a Shop" />
+              )}
+              isOptionEqualToValue={(option, value) =>
+                option.shopId === value.shopId
+              }
               fullWidth
               sx={{ marginBottom: 2 }}
             />
 
             {selectedShop && (
-              <Box sx={{ marginBottom: 2, padding: 2, bgcolor: "#f9f9f9", borderRadius: 2 }}>
+              <Box
+                sx={{
+                  marginBottom: 2,
+                  padding: 2,
+                  bgcolor: "#f9f9f9",
+                  borderRadius: 2,
+                }}
+              >
                 <Typography variant="body1">
                   <strong>📍 Address:</strong> {selectedShop.shopAddress}
                 </Typography>
@@ -186,7 +239,8 @@ function Reservation() {
                   <strong>📞 Phone:</strong> {selectedShop.telephone}
                 </Typography>
                 <Typography variant="body1">
-                  <strong>🕒 Open Hours:</strong> {selectedShop.openTime} - {selectedShop.closeTime}
+                  <strong>🕒 Open Hours:</strong> {selectedShop.openTime} -{" "}
+                  {selectedShop.closeTime}
                 </Typography>
               </Box>
             )}
@@ -194,7 +248,7 @@ function Reservation() {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DateTimePicker
                 label="Select Date & Time"
-                value={null}
+                value={date}
                 onChange={(newValue) => setDateTime(newValue)}
                 minDateTime={dayjs()}
                 sx={{
@@ -230,11 +284,34 @@ function Reservation() {
                 },
               }}
             >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "Reserve"}
+              {loading ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Reserve"
+              )}
             </Button>
           </form>
         </Box>
       </Box>
+
+      <Dialog open={errorPopupOpen} onClose={() => setErrorPopupOpen(false)}>
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>
+          <p>{error}</p>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setErrorPopupOpen(false);
+              localStorage.removeItem("authToken");
+              navigate("/login");
+            }}
+            color="primary"
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
