@@ -35,6 +35,7 @@ const ViewBooking = () => {
   const [date, setDate] = useState(dayjs());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
 
   // Load bookings and shops
   useEffect(() => {
@@ -106,43 +107,51 @@ const ViewBooking = () => {
       setOpenEditDialog(false);
     }
   };
-
-  const handleDelete = async (bookingId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      await axios.delete(`/api/v1/booking/${bookingId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setBookings((prev) => prev.filter((b) => b.bookingId !== bookingId));
-    } catch (err) {
-      handleSessionExpired(err);
-    }
+  const handleDelete = (bookingID) => {
+    setSelectedBookingID(bookingID);
+    setOpenDialog(true);
   };
+
   const confirmDelete = async () => {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) {
-        navigate("/login");
+        setError("Please log in.");
+        setErrorPopupOpen(true);
         return;
       }
 
-      await axios.delete(`/api/v1/booking/${deleteBookingId}`, {
+      // Perform the deletion request
+      const res = await axios.delete(`/api/v1/booking/${selectedBookingID}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setBookings((prev) =>
-        prev.filter((b) => b.bookingId !== deleteBookingId)
-      );
-      setOpenDeleteDialog(false);
+      if (res.data.status === "success") {
+        // Success: Remove the booking from the state without fetching data again
+        setBookings((prevBookings) =>
+          prevBookings.filter(
+            (booking) => booking.bookingId !== selectedBookingID
+          )
+        );
+
+        setSuccessMessage("Booking deleted successfully!");
+        setErrorPopupOpen(true); // Show success dialog
+      } else {
+        setError("Failed to delete the booking.");
+        setErrorPopupOpen(true); // Show error dialog
+      }
     } catch (err) {
+      console.error("Error during deletion:", err);
+
+      // Handle session expiration or other errors
       handleSessionExpired(err);
+    } finally {
+      setOpenDialog(false); // Always close the confirmation dialog after attempting deletion
     }
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
   };
 
   const handleLogout = async () => {
@@ -384,6 +393,21 @@ const ViewBooking = () => {
             color="primary"
           >
             OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Confirmation Dialog */}
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this booking?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} color="primary">
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>
