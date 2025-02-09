@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import logger from "../utils/logger_utils.js";
 import {  MassageShopServiceModel } from "./massage_shop_models.js";
 import { formatDate, convertDateToISO } from "../utils/date_utils.js";
+import { Status } from "../enums/enums.js";
 class ReservationServiceModel {
   constructor(date, shopId, userId, shopDetails) {
     this.date = new Date(date);
@@ -47,7 +48,7 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
     const shopDetails = await MassageShopServiceModel.fetchShopDetails(reservation.shopId)
     
     const checkPendingReservations = await ReservationMongooseModel.find({
-      date: { $gte: startOfDay, $lte: endOfDay }
+      date: { $gte: startOfDay, $lte: endOfDay } , status: Status.PENDING
     }).countDocuments();
     
     if(checkPendingReservations < 3) {

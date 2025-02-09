@@ -121,3 +121,8 @@ export const Messages = Object.freeze({
   GNR_1001: "Internal Server Error",
 
 });
+
+
+export const Status = Object.freeze({
+  PENDING: "Pending",
+});
