@@ -20,8 +20,8 @@ export function formatDate(isoDateStr) {
     // Convert to 12-hour format
     const amPm = hour >= 12 ? "PM" : "AM";
     hour = hour % 12 || 12; // Convert 0 (midnight) to 12
-
-    return `${day}-${month}-${year} ${String(hour).padStart(2, "0")}:${minute} ${amPm}`;
+    console.log(`${day}/${month}/${year} ${String(hour).padStart(2, "0")}:${minute} ${amPm}`)
+    return `${day}/${month}/${year} ${String(hour).padStart(2, "0")}:${minute} ${amPm}`;
   } catch (e) {
     throw new Error("Invalid ISO date format");
   }

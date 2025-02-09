@@ -5,7 +5,8 @@ import { formatDate, convertDateToISO } from "../utils/date_utils.js";
 import { Status } from "../enums/enums.js";
 class ReservationServiceModel {
   constructor(date, shopId, userId, shopDetails , bookingId) {
-    this.date = new Date(date);
+    this.date = date;
+    // this.date = new Date(date);
     if (shopId !== null && shopId !== undefined) {
       this.shopId = shopId;
     }
@@ -48,7 +49,7 @@ class ReservationServiceModel {
 static createBooking = async (reservation, startOfDay, endOfDay) => {
   try {
     const shopDetails = await MassageShopServiceModel.fetchShopDetails(reservation.shopId)
-    
+    const newDate = formatDate(reservation.date)
     const checkPendingReservations = await ReservationMongooseModel.find({
       date: { $gte: startOfDay, $lte: endOfDay } , status: Status.PENDING
     }).countDocuments();
@@ -56,7 +57,7 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
     if(checkPendingReservations < 3) {
       const createdReservation =await ReservationMongooseModel.create(reservation);
       const formattedResponse = new ReservationServiceModel(
-        createdReservation.date,
+        newDate,
         createdReservation.shopId,
         createdReservation.userId,
         shopDetails
@@ -154,14 +155,16 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
         result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, );
       }
       if(result) {
+        const newDate = formatDate(result.date)
         const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
         formattedResponse = new ReservationServiceModel(
-          result.date,
+          newDate,
           null,
           result.userId,
           shopDetails,
           result.bookingId,
         );
+        console.log(formattedResponse)
         return formattedResponse
       }
 
