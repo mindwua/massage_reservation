@@ -195,79 +195,60 @@ const ViewBooking = () => {
                     <th style={{ padding: "10px" }}>Actions</th>
                   </tr>
                 </thead>
-                {bookings.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      style={{
-                        textAlign: "center",
-                        fontSize: "18px",
-                        color: "#FF1493",
-                      }}
-                    >
-                      No booking
-                    </td>
-                  </tr>
-                ) : (
-                  <tbody>
-                    {bookings.map((booking) => {
-                      const shop = shops.find(
-                        (shop) => shop.shopId === booking.shopId
-                      );
-                      return (
-                        <tr
-                          key={booking.bookingId}
-                          style={{
-                            backgroundColor: "#fff",
-                            borderBottom: "1px solid #ccc",
-                          }}
-                        >
-                          <td style={{ padding: "10px" }}>
-                            {booking.bookingId}
-                          </td>
-                          <td style={{ padding: "10px" }}>
-                            {new Date(booking.date).toLocaleString()}
-                          </td>
-                          <td style={{ padding: "10px" }}>{shop?.shopName}</td>
-                          <td style={{ padding: "10px" }}>
-                            {shop?.shopAddress}
-                          </td>
-                          <td style={{ padding: "10px" }}>{shop?.telephone}</td>
-                          <td style={{ padding: "10px" }}>
-                            {shop?.openTime} - {shop?.closeTime}
-                          </td>
-                          <td style={{ padding: "10px" }}>
-                            <button
-                              onClick={() => handleEdit(booking)}
-                              style={{
-                                backgroundColor: "#FF1493",
-                                color: "#fff",
-                                border: "none",
-                                padding: "5px 10px",
-                                cursor: "pointer",
-                                marginRight: "5px",
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(booking.bookingId)}
-                              style={{
-                                backgroundColor: "#f44336",
-                                color: "#fff",
-                                border: "none",
-                                padding: "5px 10px",
-                                cursor: "pointer",
-                              }}
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                )}
+                <tbody>
+                  {bookings.map((booking) => {
+                    const shop = shops.find(
+                      (shop) => shop.shopId === booking.shopId
+                    );
+                    return (
+                      <tr
+                        key={booking.bookingId}
+                        style={{
+                          backgroundColor: "#fff",
+                          borderBottom: "1px solid #ccc",
+                        }}
+                      >
+                        <td style={{ padding: "10px" }}>{booking.bookingId}</td>
+                        <td style={{ padding: "10px" }}>
+                          {new Date(booking.date).toLocaleString()}
+                        </td>
+                        <td style={{ padding: "10px" }}>{shop?.shopName}</td>
+                        <td style={{ padding: "10px" }}>{shop?.shopAddress}</td>
+                        <td style={{ padding: "10px" }}>{shop?.telephone}</td>
+                        <td style={{ padding: "10px" }}>
+                          {shop?.openTime} - {shop?.closeTime}
+                        </td>
+                        <td style={{ padding: "10px" }}>
+                          <button
+                            onClick={() => handleEdit(booking)}
+                            style={{
+                              backgroundColor: "#FF1493",
+                              color: "#fff",
+                              border: "none",
+                              padding: "5px 10px",
+                              cursor: "pointer",
+                              marginRight: "5px",
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(booking.bookingId)}
+                            style={{
+                              backgroundColor: "#f44336",
+                              color: "#fff",
+                              border: "none",
+                              padding: "5px 10px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
               </table>
             </Paper>
           </Grid>

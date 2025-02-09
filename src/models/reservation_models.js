@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
 import logger from "../utils/logger_utils.js";
 import { formatDate } from "../utils/date_utils.js";
+import {  MassageShopServiceModel } from "./massage_shop_models.js";
 class ReservationServiceModel {
-  constructor(date, shopId, userId) {
+  constructor(date, shopId, userId, shopDetails) {
     this.date = new Date(date);
     this.shopId = shopId;
     this.userId = userId;
     this.status = "Pending";
     this.bookingId = this.generateBookingId();
+    this.shopDetails = shopDetails
   }
 
   generateBookingId() {
@@ -15,6 +17,8 @@ class ReservationServiceModel {
     const randomNumber = Date.now().toString().slice(-8);
     return `${prefix}${randomNumber}`;
   }
+
+
 
   static getSchema() {
     return new mongoose.Schema(
@@ -28,6 +32,32 @@ class ReservationServiceModel {
       { timestamps: true }
     );
   }
+
+
+  static async fetchShopDetails(shopId) {
+    return await ReservationMongooseModel.findOne(
+        { _id: new mongoose.Types.ObjectId(shopId) },
+    );
+}
+
+
+
+static createBooking = async (reservation) => {
+  try {
+    const shopDetails = await MassageShopServiceModel.fetchShopDetails(reservation.shopId)
+    const createdReservation =await ReservationMongooseModel.create(reservation);
+    const formattedResponse = new ReservationServiceModel(
+      createdReservation.date,
+      createdReservation.shopId,
+      createdReservation.userId,
+      shopDetails
+    );
+    return formattedResponse;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 
   static runAggregation = async (isAdmin , reqQuery, userId) => {
     try {
@@ -99,20 +129,33 @@ class ReservationServiceModel {
   static  async updateWithRole(isAdmin, userId, bookingId, req) {
     try {
       const matchStage = {};
-
+      let result
       if(req.date) matchStage.date = req.date;
       if(req.shopId) matchStage.shopId =  req.shopId;
       if(req.status) matchStage.status = req.status;
       console.log(matchStage)
       if(isAdmin) {
-        return  await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage}, {new: true});
+         result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage}, {new: true});
+        
       } else {
-        return await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, {new: true});
+        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, {new: true});
       }
+      const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
+
+      const formattedResponse = new ReservationServiceModel(
+        result.date,
+        result.shopId,
+        result.userId,
+        shopDetails
+      );
+      return formattedResponse
+
     } catch (error) {
       throw new Error(error);
     }
   }
+
+
 }
 
 
