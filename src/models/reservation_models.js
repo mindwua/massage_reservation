@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import logger from "../utils/logger_utils.js";
-import { formatDate } from "../utils/date_utils.js";
 import {  MassageShopServiceModel } from "./massage_shop_models.js";
+import { formatDate, convertDateToISO } from "../utils/date_utils.js";
 class ReservationServiceModel {
   constructor(date, shopId, userId, shopDetails) {
     this.date = new Date(date);
@@ -130,7 +130,7 @@ static createBooking = async (reservation) => {
     try {
       const matchStage = {};
       let result
-      if(req.date) matchStage.date = req.date;
+      if(req.date) matchStage.date = convertDateToISO(req.date);
       if(req.shopId) matchStage.shopId =  req.shopId;
       if(req.status) matchStage.status = req.status;
       console.log(matchStage)

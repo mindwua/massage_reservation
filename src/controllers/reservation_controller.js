@@ -5,6 +5,7 @@ import { MassageShopMongooseModel, MassageShopServiceModel } from "../models/mas
 import logger from "../utils/logger_utils.js";
 import mongoose from 'mongoose';
 import {sendSlackMessage} from "../utils/slack.js";
+import {convertDateToISO} from "../utils/date_utils.js";
 
 async function validateShop(shopId) {
     try {
@@ -18,19 +19,7 @@ async function validateShop(shopId) {
     }
 }
 
-function convertDateToISO(dateStr) {
-    const [day, month, year] = dateStr.split(" ")[0].split("-");
-    const [hour, minute] = dateStr.split(" ")[1].split(":");
 
-    const isoString = `${year}-${month}-${day}T${hour}:${minute}:00.000Z`;
-
-    const date = new Date(isoString);
-    if (isNaN(date)) {
-        throw new Error("Invalid date format");
-    }
-
-    return date.toISOString();
-}
 
 // async function checkPendingReservations(shopId, userId) {
 //     const pendingCount = await ReservationMongooseModel.countDocuments({
