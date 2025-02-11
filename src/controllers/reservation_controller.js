@@ -194,3 +194,39 @@ export async function updateReservation(req, res) {
     });
   }
 }
+
+export async function updateStatusReservation(req, res) {
+  try {
+    const { bookingId } = req.params;
+    const { isAdmin, userId } = req.user;
+    logger.info(`bookingId >>>> ${bookingId}`);
+    
+    const result = await ReservationServiceModel.updateStatusWithRole(
+      isAdmin,
+      userId,
+      bookingId,
+      req.body
+    );
+    
+    if (!result) {
+      return res.status(StatusCodes.NOT_FOUND).json({
+        status: StatusMessages.FAILED,
+        code: Codes.RSV_3009,
+        message: Messages.RSV_3009,
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({
+      status: StatusMessages.SUCCESS,
+      code: Codes.RSV_3010,
+      message: Messages.RSV_3010,
+      data: result,
+    });
+  } catch (e) {
+    logger.error(e);
+    return res.status(StatusCodes.SERVER_ERROR).json({
+      status: StatusMessages.FAILED,
+      code: Codes.GNR_1001,
+      message: Messages.GNR_1001,
+    });
+  }}

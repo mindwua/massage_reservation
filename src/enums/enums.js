@@ -42,8 +42,8 @@ export const Codes = Object.freeze({
   RSV_3006: "RSV_3006",
   RSV_3007: "RSV_3007",
   RSV_3008: "RSV_3008",
-  RSV_3009: "RSV_3008",
-  RSV_3010: "RSV_3008",
+  RSV_3009: "RSV_3009",
+  RSV_3010: "RSV_3010",
 
 
   // Validation Codes

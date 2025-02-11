@@ -27,6 +27,10 @@ export const bodyPutSchema = Joi.object({
     // status: Joi.string().valid("Pending", "Completed", "Cancelled"),
 });
 
+export const bodyPatchSchema = Joi.object({
+  status: Joi.string().valid("Pending", "Completed", "Cancelled"),
+});
+
 export const bookingRunningSchema = Joi.object({
   bookingId: Joi.string()
     .regex(/^BKD-[0-9]{8}$/)

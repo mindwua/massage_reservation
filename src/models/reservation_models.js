@@ -4,14 +4,14 @@ import {  MassageShopServiceModel } from "./massage_shop_models.js";
 import { formatDate, convertDateToISO } from "../utils/date_utils.js";
 import { Status } from "../enums/enums.js";
 class ReservationServiceModel {
-  constructor(date, shopId, userId, shopDetails , bookingId) {
+  constructor(date, shopId, userId, shopDetails , bookingId, status) {
     this.date = date;
     // this.date = new Date(date);
     if (shopId !== null && shopId !== undefined) {
       this.shopId = shopId;
     }
     this.userId = userId;
-    this.status = "Pending";
+    this.status = status ?? "Pending";
     this.bookingId = bookingId ?? this.generateBookingId() ;
     this.shopDetails = shopDetails
   }
@@ -153,10 +153,8 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
       if(req.date) matchStage.date = convertDateToISO(req.date);
       if(req.shopId) matchStage.shopId =  req.shopId;
       // if(req.status) matchStage.status = req.status;
-      console.log(matchStage)
       if(isAdmin) {
-         result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage}, );
-        
+         result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage});
       } else {
         result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, );
       }
@@ -169,6 +167,7 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
           result.userId,
           shopDetails,
           result.bookingId,
+
         );
         return formattedResponse
       }
@@ -180,6 +179,39 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
     }
   }
 
+  static  async updateStatusWithRole(isAdmin, userId, bookingId, req) {
+    try {
+      const matchStage = {};
+      let result
+      let formattedResponse
+      // if(req.date) matchStage.date = convertDateToISO(req.date);
+      // if(req.shopId) matchStage.shopId =  req.shopId;
+      if(req.status) matchStage.status = req.status;
+      if(isAdmin) {
+         result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage});
+      } else {
+        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, );
+      }
+      console.log(result)
+      if(result) {
+        const newDate = formatDate(result.date)
+        const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
+        formattedResponse = new ReservationServiceModel(
+          newDate,
+          null,
+          result.userId,
+          shopDetails,
+          result.bookingId,
+          result.status
+        );
+        return formattedResponse
+      }
+      return formattedResponse
+
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 
 }
 
