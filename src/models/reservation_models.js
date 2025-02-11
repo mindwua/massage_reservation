@@ -72,9 +72,10 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
 };
 
 
-  static runAggregation = async (isAdmin , reqQuery, userId) => {
+  static runAggregation = async (isAdmin , reqQuery, userId, skip, limit) => {
     try {
       logger.info("🔍 Running Aggregation...");
+
       const matchStage = {};
 
       if (userId && !isAdmin) matchStage.userId = userId;
@@ -84,7 +85,11 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
 
       logger.info(`matchStage >>>>> ${JSON.stringify(matchStage)}`);
 
-      let results = await ReservationMongooseModel.aggregate([
+
+
+
+
+      let results = await ReservationMongooseModel.aggregate( [
         { $match: matchStage },
         {
           $addFields: {
@@ -116,7 +121,8 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
             closeTime: "$shopDetails.closeTime",
           },
         },
-      ]);
+      ]).skip(skip).limit(limit);
+
       results = results.map((reservation) => ({
         ...reservation,
         date: formatDate(reservation.date), // Convert to string format

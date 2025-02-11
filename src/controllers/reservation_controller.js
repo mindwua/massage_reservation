@@ -18,33 +18,6 @@ async function validateShop(shopId) {
   }
 }
 
-// async function checkPendingReservations(shopId, userId) {
-//     const pendingCount = await ReservationMongooseModel.countDocuments({
-//         shopId: shopId,
-//         userId: userId,
-//         status: "Pending"
-//     });
-
-//     return pendingCount < 3;
-// }
-
-async function checkPendingReservationsForDate(shopId, userId, date) {
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
-
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
-
-  const pendingCount = await ReservationMongooseModel.countDocuments({
-    shopId: shopId,
-    userId: userId,
-    status: "Pending",
-    date: { $gte: startOfDay, $lte: endOfDay },
-  });
-
-  return pendingCount < 3;
-}
-
 export async function bookingReservation(req, res) {
   try {
     const formattedDate = convertDateToISO(req.body.date);
@@ -101,34 +74,47 @@ export async function getReservation(req, res) {
     let result;
     const userId = req.user.userId;
     const isAdmin = req.user.isAdmin;
+
+    const page = parseInt(req.query?.page) || 1;
+    const limit = parseInt(req.query?.limit) || 50;
+    const skip = (page - 1) * limit;
+
     if (isAdmin) {
-      if (req.query.userId || req.query.shopId || req.query.status) {
+      if (req.query) {
         result = await ReservationServiceModel.runAggregation(
           isAdmin,
           req.query,
-          userId
+          userId,
+          skip,
+          limit
         );
       } else {
         result = await ReservationServiceModel.runAggregation(isAdmin);
       }
     } else {
-      if (req.query.shopId || req.query.statu) {
+      if (req.query) {
         result = await ReservationServiceModel.runAggregation(
           isAdmin,
           req.query,
-          userId
+          userId,
+          skip,
+          limit
         );
       } else {
         result = await ReservationServiceModel.runAggregation(
           isAdmin,
           null,
-          userId
+          userId,
+          skip,
+          limit
         );
       }
     }
     res.status(StatusCodes.OK).json({
       status: StatusMessages.SUCCESS,
       code: Codes.RSV_3005,
+      count: result.length,
+      page: page,
       message: Messages.RSV_3005,
       data: result,
     });
