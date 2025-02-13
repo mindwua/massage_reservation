@@ -52,13 +52,54 @@ export async function loginUser(req, res) {
     }
 }
 
+export const verifyTokenUser = (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
 
-export const verifyTokenHandler = (req, res) => {
-    res.status(StatusCodes.OK).json({
-        status: StatusMessages.FAILED,
-        code: Codes.TKN_6001,
-        message: Messages.TKN_6001,
-    });
+        if (!token) {
+            return res.status(StatusCodes.FORBIDDEN).json({
+                status: StatusMessages.FAILED,
+                code: Codes.TKN_6001,
+                message: Messages.TKN_6001,
+            });
+        }
+
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(StatusCodes.FORBIDDEN).json({
+                    status: StatusMessages.FAILED,
+                    code: Codes.TKN_6002,
+                    message: Messages.TKN_6002,
+                });
+            }
+
+            const issuedAt = new Date(decoded.iat * 1000).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+            const expiresAt = new Date(decoded.exp * 1000).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+
+            res.status(StatusCodes.OK).json({
+                status: StatusMessages.SUCCESS,
+                code: Codes.TKN_2000,
+                message: Messages.TKN_2000,
+                data: {
+                    userId: decoded.userId,
+                    email: decoded.email,
+                    isAdmin: decoded.isAdmin,
+                    issuedAt,
+                    expiresAt,
+
+                }
+
+            });
+        });
+
+    } catch (error) {
+        console.error("Error during token verification:", error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            code: Codes.SRV_5001,
+            message: Messages.SRV_5001,
+        });
+    }
 };
 
 export const logoutUser = async (req, res) => {

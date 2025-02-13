@@ -15,7 +15,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use("/api/v1", routerAccount, routerAuth, routerReservation, routerMassageShops);
+app.use("/api/v1", routerAccount, routerReservation, routerMassageShops);
+app.use("/api/v1/auth", routerAuth);
+
 
 connectDB(logger);
 redisClient.connect();
