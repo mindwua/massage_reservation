@@ -1,232 +1,139 @@
-
-import { Codes, Enums, Messages, StatusCodes, StatusMessages } from "../enums/enums.js";
-import { ReservationMongooseModel, ReservationServiceModel } from "../models/reservation_models.js";
-import { MassageShopMongooseModel, MassageShopServiceModel } from "../models/massage_shop_models.js";
-import logger from "../utils/logger_utils.js";
-import { sendSlackMessage } from "../utils/slack.js";
-import { convertDateToISO, rangeDate } from "../utils/date_utils.js";
-
-async function validateShop(shopId) {
-  try {
-    const found = await MassageShopMongooseModel.find({ shopId: shopId });
-    if (found) {
-      return true;
-    }
-    return false;
-  } catch (e) {
-    throw new Error("Shop not found");
-  }
-}
-
-export async function bookingReservation(req, res) {
-  try {
-    const formattedDate = convertDateToISO(req.body.date);
-    const { startOfDay, endOfDay } = rangeDate(formattedDate);
-    const reservationModel = new ReservationServiceModel(
-      formattedDate,
-      req.body.shopId,
-      req.user.userId
-    );
-
-    const result = await validateShop(reservationModel.shopId);
+import { ReservationServiceModel, ReservationMongooseModel } from "../models/reservation_models.js";
+import { FlightMongooseModel } from "../models/flights_modeles.js";
+import { SeatMongooseModel } from "../models/seats_modeles.js";
+import { Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
 
 
-    if (result) {
-      const result = await ReservationServiceModel.createBooking(
-        reservationModel,
-        startOfDay,
-        endOfDay
-      );
-      if (!result) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          status: StatusMessages.FAILED,
-          code: Codes.RSV_3004,
-          message: Messages.RSV_3004,
+export async function createReservation(req, res) {
+    try {
+        const { flightId, seatId, userId } = req.body;
+
+        if (!flightId || !seatId || !userId) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.RSV_3001,
+                message: Messages.RSV_3001
+            });
+        }
+
+        if (!Array.isArray(seatId)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.RSV_3002,
+                message: Messages.RSV_3002
+            });
+        }
+
+        if (new Set(seatId).size !== seatId.length) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.RSV_3003,
+                message: Messages.RSV_3003
+            });
+        }
+
+        const flight = await FlightMongooseModel.findById(flightId);
+        if (!flight) {
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.RSV_3004,
+                message: Messages.RSV_3004
+            });
+        }
+
+        const seats = await SeatMongooseModel.find({ _id: { $in: seatId } }).lean();
+
+
+        const foundSeatIds = seats.map(seat => seat._id.toString());
+
+        // const missingSeatIds = seatId.filter(id => id && !foundSeatIds.includes(id));
+
+        // if (missingSeatIds.length > 0) {
+        //     return res.status(StatusCodes.BAD_REQUEST).json({
+        //         status: StatusMessages.FAILED,
+        //         code: Codes.RSV_3006,
+        //         message: `Seats not found: ${missingSeatIds.join(", ")}`
+        //     });
+        // }
+
+        const destination = flight.destination;
+        const randomDigits = Math.floor(100000 + Math.random() * 900000);
+        const bookingReference = `${destination}-${randomDigits}`;
+
+        const newReservation = new ReservationMongooseModel({
+            flightId,
+            seatId,
+            userId,
+            bookingReference,
         });
-      }
-      logger.info("Reservation created successfully");
-      res.status(StatusCodes.OK).json({
-        status: StatusMessages.SUCCESS,
-        code: Codes.RSV_3001,
-        message: Messages.RSV_3001,
-        data: result,
-      });
-      sendSlackMessage(JSON.stringify(result))
-    } else {
-      res.status(StatusCodes.NOT_FOUND).json({
-        status: StatusMessages.FAILED,
-        code: Codes.RSV_3003,
-        message: Messages.RSV_3003,
-      });
+
+        const savedReservation = await newReservation.save();
+        res.status(StatusCodes.CREATE).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.RSV_3007,
+            message: Messages.RSV_3007,
+            data: {
+                transactionId: savedReservation._id,
+                bookingReference: savedReservation.bookingReference,
+                userId: savedReservation.userId,
+                paymentStatus: savedReservation.paymentStatus,
+                createdAt: savedReservation.createdAt,
+                flightNumber: flight.flightNumber,
+                seatNumbers: seats.map(seat => seat.seatNumber)
+            }
+        });
+
+    } catch (error) {
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: StatusMessages.SERVER_ERROR,
+        });
     }
-  } catch (e) {
-    logger.error(e);
-    res.status(StatusCodes.SERVER_ERROR).json({
-      status: StatusMessages.FAILED,
-      code: Codes.GNR_1001,
-      message: Messages.GNR_1001,
-    });
-  }
 }
 
-export async function getReservation(req, res) {
-  try {
-    let result;
-    const userId = req.user.userId;
-    const isAdmin = req.user.isAdmin;
+export async function getAllReservations(req, res) {
+    try {
+        const email = req.query.email; // รับค่า email จาก query parameter
 
-    const page = parseInt(req.query?.page) || 1;
-    const limit = parseInt(req.query?.limit) || 50;
-    const skip = (page - 1) * limit;
+        // ดึงข้อมูลทั้งหมดจากฐานข้อมูล
+        const reservations = email
+            ? await ReservationServiceModel.getReservationsByEmail(email) // กรณีมี email ก็ใช้ฟังก์ชันที่กรองตาม email
+            : await ReservationServiceModel.getAllReservations(); // ถ้าไม่มี email ก็ดึงข้อมูลทั้งหมด
 
-    if (isAdmin) {
-      if (req.query) {
-        result = await ReservationServiceModel.runAggregation(
-          isAdmin,
-          req.query,
-          userId,
-          skip,
-          limit
-        );
-      } else {
-        result = await ReservationServiceModel.runAggregation(isAdmin);
-      }
-    } else {
-      if (req.query) {
-        result = await ReservationServiceModel.runAggregation(
-          isAdmin,
-          req.query,
-          userId,
-          skip,
-          limit
-        );
-      } else {
-        result = await ReservationServiceModel.runAggregation(
-          isAdmin,
-          null,
-          userId,
-          skip,
-          limit
-        );
-      }
+        // กรองข้อมูลจาก reservations โดยตรวจสอบ email ใน account
+        const filteredReservations = reservations.filter(reservation => {
+            return reservation.account?.email === email; // ตรวจสอบ email ที่ตรงกันในแต่ละ reservation
+        });
+
+
+        const data = reservations.map(reservation => {
+            return {
+                flightNumber: reservation.flightNumber || reservation.flight?.flightNumber,
+                origin: reservation.origin || reservation.flight?.origin,
+                destination: reservation.destination || reservation.flight?.destination,
+                departureTime: reservation.departureTime || reservation.flight?.departureTime,
+                arrivalTime: reservation.arrivalTime || reservation.flight?.arrivalTime,
+                reservationId: reservation._id || reservation.reservationId,
+                paymentStatus: reservation.paymentStatus,
+                bookingReference: reservation.bookingReference,
+                createdAt: reservation.createdAt,
+                name: reservation.account?.name,
+                email: reservation.account?.email,
+                seats: reservation.seats,
+                totalPrice: reservation.totalPrice
+            };
+        });
+
+        res.status(StatusCodes.OK).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.RSV_3009,
+            message: Messages.RSV_3009,
+            data
+        });
+
+        console.log(data);
+    } catch (error) {
+        console.error('Error fetching reservations:', error.message);
+        console.error(error);
     }
-    res.status(StatusCodes.OK).json({
-      status: StatusMessages.SUCCESS,
-      code: Codes.RSV_3005,
-      count: result.length,
-      page: page,
-      message: Messages.RSV_3005,
-      data: result,
-    });
-  } catch (e) {
-    logger.error(e);
-    res.status(StatusCodes.SERVER_ERROR).json({
-      status: StatusMessages.FAILED,
-      code: Codes.GNR_1001,
-      message: Messages.GNR_1001,
-    });
-  }
 }
-
-export async function deleteReservation(req, res) {
-  try {
-    const { bookingId } = req.params;
-    const { isAdmin, userId } = req.user;
-    logger.info(`bookingId >>>> ${bookingId}`);
-    const reseration = await ReservationServiceModel.deleteWithRole(
-      isAdmin,
-      userId,
-      bookingId
-    );
-    if (!reseration) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        status: StatusMessages.FAILED,
-        code: Codes.RSV_3007,
-        message: Messages.RSV_3007,
-      });
-    }
-    return res.status(StatusCodes.OK).json({
-      status: StatusMessages.SUCCESS,
-      code: Codes.RSV_3008,
-      message: Messages.RSV_3008,
-    });
-  } catch (e) {
-    logger.error(e);
-    res.status(StatusCodes.SERVER_ERROR).json({
-      status: StatusMessages.FAILED,
-      code: Codes.GNR_1001,
-      message: Messages.GNR_1001,
-    });
-  }
-}
-
-export async function updateReservation(req, res) {
-  try {
-    const { bookingId } = req.params;
-    const { isAdmin, userId } = req.user;
-    logger.info(`bookingId >>>> ${bookingId}`);
-    const result = await ReservationServiceModel.updateWithRole(
-      isAdmin,
-      userId,
-      bookingId,
-      req.body
-    );
-    if (!result) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        status: StatusMessages.FAILED,
-        code: Codes.RSV_3009,
-        message: Messages.RSV_3009,
-      });
-    }
-
-    return res.status(StatusCodes.OK).json({
-      status: StatusMessages.SUCCESS,
-      code: Codes.RSV_3010,
-      message: Messages.RSV_3010,
-      data: result,
-    });
-  } catch (e) {
-    logger.error(e);
-    res.status(StatusCodes.SERVER_ERROR).json({
-      status: StatusMessages.FAILED,
-      code: Codes.GNR_1001,
-      message: Messages.GNR_1001,
-    });
-  }
-}
-
-export async function updateStatusReservation(req, res) {
-  try {
-    const { bookingId } = req.params;
-    const { isAdmin, userId } = req.user;
-    logger.info(`bookingId >>>> ${bookingId}`);
-    
-    const result = await ReservationServiceModel.updateStatusWithRole(
-      isAdmin,
-      userId,
-      bookingId,
-      req.body
-    );
-    
-    if (!result) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        status: StatusMessages.FAILED,
-        code: Codes.RSV_3009,
-        message: Messages.RSV_3009,
-      });
-    }
-
-    return res.status(StatusCodes.OK).json({
-      status: StatusMessages.SUCCESS,
-      code: Codes.RSV_3010,
-      message: Messages.RSV_3010,
-      data: result,
-    });
-  } catch (e) {
-    logger.error(e);
-    return res.status(StatusCodes.SERVER_ERROR).json({
-      status: StatusMessages.FAILED,
-      code: Codes.GNR_1001,
-      message: Messages.GNR_1001,
-    });
-  }}

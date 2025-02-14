@@ -1,5 +1,4 @@
 import { FlightServiceModel, FlightMongooseModel } from "../models/flights_modeles.js";
-
 import { Codes, StatusCodes, StatusMessages, Messages } from "../enums/enums.js";
 
 export async function createFlight(req, res) {
@@ -7,40 +6,56 @@ export async function createFlight(req, res) {
         const { flightNumber, origin, destination, departureTime, arrivalTime } = req.body;
 
         if (!flightNumber || !origin || !destination || !departureTime || !arrivalTime) {
-            return res.status(400).json({ message: "Missing required flight fields." });
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.FGT_1007,
+                message: Messages.FGT_1007
+            });
         }
 
         if (!req.user || req.user.isAdmin !== true) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
                 status: StatusMessages.FAILED,
-                code: Codes.MGS_1003,
-                message: Messages.MGS_1003,
+                code: Codes.TKN_6001,
+                message: Messages.TKN_6001,
             });
         }
 
         const existingFlight = await FlightMongooseModel.findOne({ flightNumber });
         if (existingFlight) {
-            return res.status(400).json({
-                status: "FAILED",
-                message: "Flight number already exists"
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                status: StatusMessages.FAILED,
+                code: Codes.FGT_1008,
+                message: Messages.FGT_1008,
             });
         }
 
         const newFlight = new FlightMongooseModel(req.body);
         await newFlight.save();
 
-        return res.status(201).json({
-            message: "Flight created successfully",
-            flight: newFlight,
+        return res.status(StatusCodes.CREATE).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.FGT_1009,
+            message: Messages.FGT_1009,
+            data: {
+                flightId: newFlight._id,
+                origin: newFlight.origin,
+                destination: newFlight.destination,
+                departureTime: newFlight.departureTime,
+                arrivalTime: newFlight.arrivalTime,
+                createdAt: newFlight.createdAt,
+                updatedAt: newFlight.updatedAt,
+            }
         });
+
     } catch (error) {
-        console.error("Error creating flight:", error);
-        return res.status(500).json({
-            message: "Failed to create flight",
-            error: error.message,
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: StatusMessages.SERVER_ERROR,
         });
     }
 }
+
 
 
 export async function updateFlight(req, res) {
@@ -51,9 +66,10 @@ export async function updateFlight(req, res) {
         const flight = await FlightMongooseModel.findOne({ flightNumber });
 
         if (!flight) {
-            return res.status(404).json({
-                status: "FAILED",
-                message: "Flight not found"
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: StatusMessages.FAILED,
+                code: Codes.FGT_1001,
+                message: Messages.FGT_1001,
             });
         }
 
@@ -64,29 +80,67 @@ export async function updateFlight(req, res) {
 
 
         await flight.save();
-        return res.status(200).json({
-            status: "SUCCESS",
-            message: "Flight updated successfully",
-            data: flight
+        return res.status(StatusCodes.OK).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.FGT_1006,
+            message: Messages.FGT_1006,
+            data: {
+                flightId: flight._id,
+                flightNumber: flight.flightNumber,
+                origin: flight.origin,
+                destination: flight.destination,
+                departureTime: flight.departureTime,
+                arrivalTime: flight.arrivalTime,
+                createdAt: flight.createdAt,
+                updatedAt: flight.arrivalTime
+            }
         });
 
     } catch (error) {
-        return res.status(500).json({
-            status: "FAILED",
-            message: error.message || "Internal server error"
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: StatusMessages.SERVER_ERROR,
         });
     }
 }
+
 
 export async function getAllFlights(req, res) {
     try {
         const flights = await FlightServiceModel.getAllFlights();
-        res.status(200).json(flights);
+
+        const data = flights.map(flight => ({
+            flightId: flight._id,
+            flightNumber: flight.flightNumber,
+            origin: flight.origin,
+            destination: flight.destination,
+            departureTime: flight.departureTime,
+            arrivalTime: flight.arrivalTime,
+            seats: flight.seats.map(seat => ({
+                id: seat._id,
+                seatNumber: seat.seatNumber,
+                seatClass: seat.seatClass,
+                price: seat.price,
+                status: seat.status,
+                flightNumber: flight.flightNumber
+            }))
+
+        }));
+
+        res.status(StatusCodes.OK).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.FGT_1003,
+            message: Messages.FGT_1003,
+            data
+        });
     } catch (error) {
-        console.error("Error fetching flights:", error);
-        res.status(500).json({ error: "An error occurred while fetching flights." });
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: StatusMessages.SERVER_ERROR,
+        });
     }
 }
+
 
 
 export async function deleteFlight(req, res) {
@@ -96,21 +150,25 @@ export async function deleteFlight(req, res) {
         const flight = await FlightMongooseModel.findOneAndDelete({ flightNumber });
 
         if (!flight) {
-            return res.status(404).json({
-                status: "FAILED",
-                message: "Flight not found"
+            return res.status(StatusCodes.NOT_FOUND).json({
+                status: StatusMessages.FAILED,
+                code: Codes.FGT_1004,
+                message: Messages.FGT_1004
             });
         }
 
-        return res.status(200).json({
-            status: "SUCCESS",
-            message: "Flight deleted successfully"
+        return res.status(StatusCodes.OK).json({
+            status: StatusMessages.SUCCESS,
+            code: Codes.FGT_1005,
+            message: Messages.FGT_1005
         });
 
     } catch (error) {
-        return res.status(500).json({
-            status: "FAILED",
-            message: error.message || "Internal server error"
+        res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            message: StatusMessages.SERVER_ERROR,
         });
     }
 }
+
+

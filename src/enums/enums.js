@@ -59,11 +59,27 @@ export const Codes = Object.freeze({
   TKN_6001: "TKN_6001",
   TKN_6002: "TKN_6002",
 
-  // Massage Shops
-  MGS_1001: "MGS_1001",
-  MGS_1002: "MGS_1002",
-  MGS_1003: "MGS_1003",
-  MGS_1004: "MGS_1004",
+  //Seat
+  SAT_1001: "SAT_1001",
+  SAT_1002: "SAT_1002",
+  SAT_1003: "SAT_1003",
+  SAT_1004: "SAT_1004",
+  SAT_1005: "SAT_1005",
+  SAT_1006: "SAT_1006",
+  SAT_1007: "SAT_1007",
+  SAT_1008: "SAT_1008",
+  SAT_1009: "SAT_1009",
+
+  //Flight
+  FGT_1001: "SAT_1001",
+  FGT_1002: "SAT_1002",
+  FGT_1003: "SAT_1003",
+  FGT_1004: "SAT_1004",
+  FGT_1005: "SAT_1005",
+  FGT_1006: "SAT_1006",
+  FGT_1007: "FGT_1007",
+  FGT_1008: "FGT_1008",
+  FGT_1009: "FGT_1009",
 
   //General
   GNR_1001: "GNR_1001",
@@ -85,24 +101,39 @@ export const Messages = Object.freeze({
   LGN_2003: "The email you entered is incorrect. Please try again.",
 
   // Reservation Messages
-  RSV_3001: "Reservation created successfully",
-  RSV_3002: "Reservation creation failed",
-  RSV_3003: "Reservation creation failed: Shop not found",
-  RSV_3004: "User has too many pending reservations for this date",
+  RSV_3001: "Missing required information: flightId, seatId, and userId are mandatory.",
+  RSV_3002: "seatId must be an array.",
+  RSV_3003: "seatId must not contain duplicates.",
+  RSV_3004: "Flight with the specified flightId not found.",
   RSV_3005: "Get reservation successfully",
   RSV_3006: "Get reservation failed",
-  RSV_3007: "Delete reservation failed: Reservation not found",
+  RSV_3007: "reservation successfully",
   RSV_3008: "Delete reservation successfully",
-  RSV_3009: "Update reservation failed: Reservation not found",
+  RSV_3009: "reservation transaction found successfully.",
   RSV_3010: "Update reservation successfully",
 
+  // Seat
+  SAT_1001: "Missing required information: flightId, seatId, and userId are mandatory.",
+  SAT_1002: "Flight not found. Please check the flight number.",
+  SAT_1003: "Seat number already exists for this flight.",
+  SAT_1004: "Seat created successfully.",
+  SAT_1005: "Seat not found.",
+  SAT_1006: "You cannot update seatNumber or flightId.",
+  SAT_1007: "Seat updated successfully.",
+  SAT_1008: "Seat delete successfully.",
+  SAT_1009: "Seat found successfully.",
 
-
-  // Massage Shops
-  MGS_1001: "Massage Shops created successfully",
-  MGS_1002: "The Massage Shops Already Exists: The name already exists in the system.",
-  MGS_1003: "You do not have permission to create a massage shop",
-  MGS_1004: "Massage shop not found",
+  // Flight
+  FGT_1001: "Flight not found.",
+  FGT_1002: "No seats available on flight",
+  FGT_1003: "Flight found successfully.",
+  FGT_1004: "Flight not found",
+  FGT_1005: "Flight deleted successfully",
+  FGT_1006: "Flight updated successfully",
+  FGT_1007: "Flight found successfully",
+  FGT_1008: "Missing required information:flightNumber,origin,origin,departureTime and arrivalTime are mandatory.",
+  FGT_1008: "Flight number already exists.",
+  FGT_1009: "Flight created successfully.",
 
   // Validation Messages
   VAL_4001: "Required fields are missing. Please fill in all the necessary fields.",

@@ -23,9 +23,6 @@ class AccountServiceModel {
   }
 }
 
-const AccountMongooseModel = mongoose.model(
-  "Account",
-  AccountServiceModel.getSchema()
-);
+const AccountMongooseModel = mongoose.model("Account", AccountServiceModel.getSchema());
 
 export { AccountServiceModel, AccountMongooseModel };
