@@ -14,6 +14,14 @@ export async function createSeat(req, res) {
             });
         }
 
+        if (!req.user || req.user.isAdmin !== true) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                status: StatusMessages.FAILED,
+                code: Codes.TKN_6001,
+                message: Messages.TKN_6001,
+            });
+        }
+
         const flight = await FlightMongooseModel.findOne({ flightNumber });
         if (!flight) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -80,6 +88,14 @@ export async function updateSeat(req, res) {
         const { _id } = req.params;
         const { seatClass, price } = req.body;
 
+        if (!req.user || req.user.isAdmin !== true) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                status: StatusMessages.FAILED,
+                code: Codes.TKN_6001,
+                message: Messages.TKN_6001,
+            });
+        }
+
         if (!seatClass || price === undefined) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 status: StatusMessages.FAILED,
@@ -136,6 +152,14 @@ export async function deleteSeat(req, res) {
         const { _id } = req.params;
 
         const seat = await SeatMongooseModel.findByIdAndDelete(_id);
+
+        if (!req.user || req.user.isAdmin !== true) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                status: StatusMessages.FAILED,
+                code: Codes.TKN_6001,
+                message: Messages.TKN_6001,
+            });
+        }
 
         if (!seat) {
             return res.status(StatusCodes.NOT_FOUND).json({

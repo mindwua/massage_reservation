@@ -1,23 +1,21 @@
 import mongoose from "mongoose";
 
 class AccountServiceModel {
-  constructor(firstName, lastName, password, email, telephone, isAdmin) {
-    this.firstName = firstName;
-    this.lastName = lastName;
+  constructor(name, password, email, telephone, isAdmin) {
+    this.name = name;
     this.password = password;
     this.email = email;
-    this.phoneNumber = telephone;
+    this.telephone = telephone;
     this.isAdmin = isAdmin;
   }
 
   static getSchema() {
     return new mongoose.Schema(
       {
-        firstName: { type: String, required: true },
-        lastName: { type: String, required: true },
+        name: { type: String, required: true },
         password: { type: String, required: true },
         email: { type: String, required: true, unique: true },
-        phoneNumber: { type: String, required: true },
+        telephone: { type: String, required: true },
         isAdmin: { type: Boolean, default: false },
       },
       { timestamps: true }

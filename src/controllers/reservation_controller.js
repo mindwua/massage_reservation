@@ -46,16 +46,6 @@ export async function createReservation(req, res) {
 
         const foundSeatIds = seats.map(seat => seat._id.toString());
 
-        // const missingSeatIds = seatId.filter(id => id && !foundSeatIds.includes(id));
-
-        // if (missingSeatIds.length > 0) {
-        //     return res.status(StatusCodes.BAD_REQUEST).json({
-        //         status: StatusMessages.FAILED,
-        //         code: Codes.RSV_3006,
-        //         message: `Seats not found: ${missingSeatIds.join(", ")}`
-        //     });
-        // }
-
         const destination = flight.destination;
         const randomDigits = Math.floor(100000 + Math.random() * 900000);
         const bookingReference = `${destination}-${randomDigits}`;
@@ -93,16 +83,14 @@ export async function createReservation(req, res) {
 
 export async function getAllReservations(req, res) {
     try {
-        const email = req.query.email; // รับค่า email จาก query parameter
+        const email = req.query.email;
 
-        // ดึงข้อมูลทั้งหมดจากฐานข้อมูล
         const reservations = email
-            ? await ReservationServiceModel.getReservationsByEmail(email) // กรณีมี email ก็ใช้ฟังก์ชันที่กรองตาม email
-            : await ReservationServiceModel.getAllReservations(); // ถ้าไม่มี email ก็ดึงข้อมูลทั้งหมด
+            ? await ReservationServiceModel.getReservationsByEmail(email)
+            : await ReservationServiceModel.getAllReservations();
 
-        // กรองข้อมูลจาก reservations โดยตรวจสอบ email ใน account
         const filteredReservations = reservations.filter(reservation => {
-            return reservation.account?.email === email; // ตรวจสอบ email ที่ตรงกันในแต่ละ reservation
+            return reservation.account?.email === email;
         });
 
 

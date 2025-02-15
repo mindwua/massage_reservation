@@ -8,8 +8,8 @@ export async function createFlight(req, res) {
         if (!flightNumber || !origin || !destination || !departureTime || !arrivalTime) {
             return res.status(StatusCodes.BAD_REQUEST).json({
                 status: StatusMessages.FAILED,
-                code: Codes.FGT_1007,
-                message: Messages.FGT_1007
+                code: Codes.FGT_1008,
+                message: Messages.FGT_1008
             });
         }
 
@@ -56,14 +56,20 @@ export async function createFlight(req, res) {
     }
 }
 
-
-
 export async function updateFlight(req, res) {
     try {
         const { flightNumber } = req.params;
         const { origin, destination, departureTime, arrivalTime } = req.body;
 
         const flight = await FlightMongooseModel.findOne({ flightNumber });
+
+        if (!req.user || req.user.isAdmin !== true) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                status: StatusMessages.FAILED,
+                code: Codes.TKN_6001,
+                message: Messages.TKN_6001,
+            });
+        }
 
         if (!flight) {
             return res.status(StatusCodes.NOT_FOUND).json({
@@ -149,6 +155,13 @@ export async function deleteFlight(req, res) {
 
         const flight = await FlightMongooseModel.findOneAndDelete({ flightNumber });
 
+        if (!req.user || req.user.isAdmin !== true) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                status: StatusMessages.FAILED,
+                code: Codes.TKN_6001,
+                message: Messages.TKN_6001,
+            });
+        }
         if (!flight) {
             return res.status(StatusCodes.NOT_FOUND).json({
                 status: StatusMessages.FAILED,

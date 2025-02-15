@@ -10,7 +10,7 @@ const hideEmail = (email) => {
 };
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-const telephoneRegex = /^[0-9]{10}$/;
+const phoneNumberRegex = /^[0-9]{10}$/;
 const nameRegex = /^[A-Za-zก-ฮะๆ-๏\s]+$/;
 const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,20}$/;
 
@@ -35,9 +35,9 @@ const checkExistingAccount = async (field, value, model, errorCode, errorMessage
 
 export async function createAccount(req, res) {
   try {
-    const { name, password, email, telephone } = req.body;
+    const { firstName, lastName, password, email, phoneNumber, isAdmin = false } = req.body;
 
-    if (!name || !password || !email || !telephone) {
+    if (!firstName || !lastName || !password || !email || !phoneNumber) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         status: StatusMessages.FAILED,
         code: Codes.VAL_4001,
@@ -46,9 +46,10 @@ export async function createAccount(req, res) {
     }
 
     try {
-      validateField(name, nameRegex, Codes.REG_1003, `${Messages.REG_1003}: ${name}`);
+      validateField(firstName, nameRegex, Codes.REG_1003, `${Messages.REG_1003}: ${firstName}`);
+      validateField(lastName, nameRegex, Codes.REG_1003, `${Messages.REG_1003}: ${lastName}`);
       validateField(password, passwordRegex, Codes.REG_1006, Messages.REG_1006);
-      validateField(telephone, telephoneRegex, Codes.REG_1003, `${Messages.REG_1003}: ${telephone}`);
+      validateField(phoneNumber, phoneNumberRegex, Codes.REG_1003, `${Messages.REG_1003}: ${phoneNumber}`);
       validateField(email, emailRegex, Codes.REG_1003, `${Messages.REG_1003}: ${email}`);
     } catch (validationError) {
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -60,7 +61,6 @@ export async function createAccount(req, res) {
 
     try {
       await checkExistingAccount('email', email, AccountMongooseModel, Codes.REG_1005, Messages.REG_1005);
-      await checkExistingAccount('name', name, AccountMongooseModel, Codes.REG_1004, Messages.REG_1004);
     } catch (accountError) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         status: StatusMessages.FAILED,
@@ -72,7 +72,7 @@ export async function createAccount(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const hiddenEmail = hideEmail(email);
 
-    const newAccount = new AccountServiceModel(name, hashedPassword, email, telephone);
+    const newAccount = new AccountServiceModel(firstName, lastName, hashedPassword, email, phoneNumber);
     await AccountMongooseModel.create(newAccount);
 
     res.status(StatusCodes.CREATE).json({
@@ -80,10 +80,12 @@ export async function createAccount(req, res) {
       code: Codes.REG_1001,
       message: Messages.REG_1001,
       data: {
-        name: newAccount.name,
+        firstName: newAccount.firstName,
+        lastName: newAccount.lastName,
         email: hiddenEmail,
-        telephone: newAccount.telephone,
-        password: hashedPassword
+        phoneNumber: newAccount.phoneNumber,
+        password: hashedPassword,
+        isAdmin: isAdmin
       }
     });
 

@@ -1,0 +1,41 @@
+{
+  "flightNumber": "TG123",
+  "depart": {
+    "departDate": "2025-03-15T07",
+    "guests": [
+      {
+        "guest1": {
+          "first": "APHIRAK",
+          "family": "PHOTHISA",
+          "passport": "",
+          "seatNumber": "10A"
+        },
+        "guest2": {
+          "first": "APHIRAK",
+          "family": "PHOTHISA",
+          "passport": "",
+          "seatNumber": "10A"
+        }
+      }
+    ]
+  },
+  "return": {
+    "returnDate": "2025-03-15T07",
+    "guests": [
+      {
+        "guest1": {
+          "first": "APHIRAK",
+          "family": "PHOTHISA",
+          "passport": "",
+          "seatNumber": "10A"
+        },
+        "guest2": {
+          "first": "APHIRAK",
+          "family": "PHOTHISA",
+          "passport": "",
+          "seatNumber": "10A"
+        }
+      }
+    ]
+  }
+}

@@ -145,7 +145,7 @@ export const Messages = Object.freeze({
   LOT_5001: "Logout successful",
 
   // Permission Messages
-  TKN_6001: "Access denied. No token provided.",
+  TKN_6001: "You do not have permission to access.",
   TKN_6002: "Invaild or session expired",
 
   //General Messages

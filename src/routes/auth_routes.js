@@ -3,9 +3,9 @@ import { loginUser, logoutUser, verifyTokenUser } from "../controllers/auth_cont
 import { verifyToken } from "../middleware/auth.js";
 const routerAuth = Router();
 
-routerAuth.post("/login", loginUser);
-routerAuth.post("/logout", verifyToken, logoutUser);
-routerAuth.get('/verifyToken', verifyToken, verifyTokenUser);
+routerAuth.post("/auth/login", loginUser);
+routerAuth.post("/auth/logout", verifyToken, logoutUser);
+routerAuth.get('/auth/verifyToken', verifyToken, verifyTokenUser);
 
 
 

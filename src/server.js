@@ -20,8 +20,8 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use("/api/v1", routerAccount, routerFlight, routerSeats);
-app.use("/api/v1/auth", routerAuth);
+app.use("/api/v1/flight-core-api", routerFlight, routerSeats);
+app.use("/api/v1/user-core-api", routerAccount, routerAuth);
 app.use("/api/v1/flight", routerReservation);
 
 
