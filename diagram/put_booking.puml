@@ -48,12 +48,12 @@ else data format is valid
 end
 deactivate ValidateBody
 
-ReservationRouter -> ReservationController: updateReservation()
+ReservationRouter -> ReservationController: updateReservation(req, res)
 deactivate ReservationRouter
 
 activate ReservationController
 
-ReservationController -> ReservationModel: updateWithRole(date, shopId)
+ReservationController -> ReservationModel: updateWithRole(isAdmin,userId,bookingId,req.body)
 activate ReservationModel
 
 alt role Admin
@@ -75,17 +75,11 @@ deactivate SlackService
 ReservationController --> Server: Response data
 deactivate ReservationController
 
-alt update success
-    Server --> Client: 200 Update reservation successfully (RSV_3010)
-' deactivate ReservationRouter
-else find < 3 
-    Server --> Client: 404 Update reservation failed: Reservation not found (RSV_3004)
-' deactivate Server
-else create failed
-    Server -> Client: 500 Internal Server Error (GNR_1001)
+alt Update reservation successfully
+    Server --> Client: 200 OK (RSV_3010)
+else Update reservation failed Reservation not found
+    Server --> Client: 404 NOT FOUND (RSV_3004)
+else Internal Server Error
+    Server -> Client: 500 SERVER_ERROR (GNR_1001)
 end
-' group Error Handling
-    ' ReservationController -> Client: 500 Internal Server Error (GNR_1001)
-    ' deactivate Server
-' end
 @enduml
