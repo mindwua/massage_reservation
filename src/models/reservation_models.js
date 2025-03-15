@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import logger from "../utils/logger_utils.js";
-import {  MassageShopServiceModel } from "./massage_shop_models.js";
+import { MassageShopServiceModel } from "./massage_shop_models.js";
 import { formatDate, convertDateToISO } from "../utils/date_utils.js";
 import { Status } from "../enums/enums.js";
 class ReservationServiceModel {
-  constructor(date, shopId, userId, shopDetails , bookingId, status) {
+  constructor(date, shopId, userId, shopDetails, bookingId, status) {
     this.date = date;
     // this.date = new Date(date);
     if (shopId !== null && shopId !== undefined) {
@@ -12,7 +12,7 @@ class ReservationServiceModel {
     }
     this.userId = userId;
     this.status = status ?? "Pending";
-    this.bookingId = bookingId ?? this.generateBookingId() ;
+    this.bookingId = bookingId ?? this.generateBookingId();
     this.shopDetails = shopDetails
   }
 
@@ -40,39 +40,39 @@ class ReservationServiceModel {
 
   static async fetchShopDetails(shopId) {
     return await ReservationMongooseModel.findOne(
-        { _id: new mongoose.Types.ObjectId(shopId) },
+      { _id: new mongoose.Types.ObjectId(shopId) },
     );
-}
-
-
-
-static createBooking = async (reservation, startOfDay, endOfDay) => {
-  try {
-    const shopDetails = await MassageShopServiceModel.fetchShopDetails(reservation.shopId)
-    const newDate = formatDate(reservation.date)
-    const checkPendingReservations = await ReservationMongooseModel.find({
-      date: { $gte: startOfDay, $lte: endOfDay } , status: Status.PENDING
-    }).countDocuments();
-    
-    if(checkPendingReservations < 3) {
-      const createdReservation =await ReservationMongooseModel.create(reservation);
-      const formattedResponse = new ReservationServiceModel(
-        newDate,
-        createdReservation.shopId,
-        createdReservation.userId,
-        shopDetails
-      );
-      return formattedResponse;
-    }
-
-
-  } catch (error) {
-    throw new Error(error);
   }
-};
 
 
-  static runAggregation = async (isAdmin , reqQuery, userId, skip, limit) => {
+
+  static createBooking = async (reservation, startOfDay, endOfDay) => {
+    try {
+      const shopDetails = await MassageShopServiceModel.fetchShopDetails(reservation.shopId)
+      const newDate = formatDate(reservation.date)
+      const checkPendingReservations = await ReservationMongooseModel.find({
+        date: { $gte: startOfDay, $lte: endOfDay }, status: Status.PENDING
+      }).countDocuments();
+
+      if (checkPendingReservations < 3) {
+        const createdReservation = await ReservationMongooseModel.create(reservation);
+        const formattedResponse = new ReservationServiceModel(
+          newDate,
+          createdReservation.shopId,
+          createdReservation.userId,
+          shopDetails
+        );
+        return formattedResponse;
+      }
+
+
+    } catch (error) {
+      throw new Error(error);
+    }
+  };
+
+
+  static runAggregation = async (isAdmin, reqQuery, userId, skip, limit) => {
     try {
       logger.info("🔍 Running Aggregation...");
 
@@ -80,32 +80,32 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
 
       if (userId && !isAdmin) matchStage.userId = userId;
       if (reqQuery?.userId && isAdmin) matchStage.userId = reqQuery.userId;
-      if (reqQuery?.shopId) matchStage.shopId = reqQuery.shopId;
+      if (reqQuery?.shopId) matchStage.shopId = new mongoose.Types.ObjectId(reqQuery.shopId);
       if (reqQuery?.status) matchStage.status = reqQuery.status;
 
       logger.info(`matchStage >>>>> ${JSON.stringify(matchStage)}`);
 
 
 
-
-
-      let results = await ReservationMongooseModel.aggregate( [
-        { $match: matchStage },
+      let results = await ReservationMongooseModel.aggregate([
         {
           $addFields: {
-            shopIdObject: { $toObjectId: "$shopId" },
-          },
+            shopIdObject: { $toObjectId: "$shopId" }
+          }
+        },
+        {
+          $match: matchStage
         },
         {
           $lookup: {
             from: "massage_shops",
             localField: "shopIdObject",
             foreignField: "_id",
-            as: "shopDetails",
-          },
+            as: "shopDetails"
+          }
         },
         {
-          $unwind: "$shopDetails",
+          $unwind: "$shopDetails"
         },
         {
           $project: {
@@ -119,14 +119,15 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
             telephone: "$shopDetails.telephone",
             openTime: "$shopDetails.openTime",
             closeTime: "$shopDetails.closeTime",
-          },
-        },
+          }
+        }
       ]).skip(skip).limit(limit);
 
       results = results.map((reservation) => ({
         ...reservation,
         date: formatDate(reservation.date), // Convert to string format
       }));
+      console.log(results)
       return results
     } catch (error) {
       throw new Error(error)
@@ -135,7 +136,7 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
 
   static async deleteWithRole(isAdmin, userId, bookingId) {
     try {
-      if(isAdmin) {
+      if (isAdmin) {
         return await ReservationMongooseModel.findOneAndDelete({ bookingId: bookingId });
       } else {
         return await ReservationMongooseModel.findOneAndDelete({ bookingId: bookingId, userId: userId });
@@ -145,20 +146,20 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
     }
   }
 
-  static  async updateWithRole(isAdmin, userId, bookingId, req) {
+  static async updateWithRole(isAdmin, userId, bookingId, req) {
     try {
       const matchStage = {};
       let result
       let formattedResponse
-      if(req.date) matchStage.date = convertDateToISO(req.date);
-      if(req.shopId) matchStage.shopId =  req.shopId;
+      if (req.date) matchStage.date = convertDateToISO(req.date);
+      if (req.shopId) matchStage.shopId = req.shopId;
       // if(req.status) matchStage.status = req.status;
-      if(isAdmin) {
-         result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage});
+      if (isAdmin) {
+        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, { $set: matchStage });
       } else {
-        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, );
+        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId }, { $set: matchStage },);
       }
-      if(result) {
+      if (result) {
         const newDate = formatDate(result.date)
         const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
         formattedResponse = new ReservationServiceModel(
@@ -179,21 +180,21 @@ static createBooking = async (reservation, startOfDay, endOfDay) => {
     }
   }
 
-  static  async updateStatusWithRole(isAdmin, userId, bookingId, req) {
+  static async updateStatusWithRole(isAdmin, userId, bookingId, req) {
     try {
       const matchStage = {};
       let result
       let formattedResponse
       // if(req.date) matchStage.date = convertDateToISO(req.date);
       // if(req.shopId) matchStage.shopId =  req.shopId;
-      if(req.status) matchStage.status = req.status;
-      if(isAdmin) {
-         result =   await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, {$set:matchStage});
+      if (req.status) matchStage.status = req.status;
+      if (isAdmin) {
+        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, { $set: matchStage });
       } else {
-        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId}, {$set:matchStage}, );
+        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId }, { $set: matchStage },);
       }
       console.log(result)
-      if(result) {
+      if (result) {
         const newDate = formatDate(result.date)
         const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
         formattedResponse = new ReservationServiceModel(
