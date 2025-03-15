@@ -1,28 +1,95 @@
 import express from "express";
 import axios from "axios";
 import dotenv from "dotenv";
+import logger from "./logger_utils.js"
 
-dotenv.config({path: "../config/config.env"} );
+dotenv.config({ path: "../config/config.env" });
 
 
-export const sendSlackMessage = async (message) => {
-    const slackUrl = process.env.SLACK_WEBHOOK_URL 
-    console.log(slackUrl)
+export const sendSlackMessage = async (message, user) => {
+  const slackUrl = process.env.SLACK_WEBHOOK_URL
   try {
     const response = await axios.post(
       slackUrl,
-      { text: message },
+      {
+        "blocks": [
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*📅 Booking Details*"
+            }
+          },
+          {
+            "type": "section",
+            "fields": [
+              {
+                "type": "mrkdwn",
+                "text": `*Date:* ${message.date}`
+              },
+              {
+                "type": "mrkdwn",
+                "text": `*Status:* ${message.status}`
+              },
+              {
+                "type": "mrkdwn",
+                "text": `*Booking ID:* ${message.bookingId}`
+              },
+              {
+                "type": "mrkdwn",
+                "text": `*User ID:* ${user.userId}`
+              },
+              {
+                "type": "mrkdwn",
+                "text": `*Email:* ${user.email}`
+              }
+            ]
+          },
+          {
+            "type": "divider"
+          },
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": "*🏪 Shop Details*"
+            }
+          },
+          {
+            "type": "section",
+            "fields": [
+              {
+                "type": "mrkdwn",
+                "text": `*Shop Name:* ${message.shopDetails.shopName}`
+              },
+              {
+                "type": "mrkdwn",
+                "text": `*Address:* ${message.shopDetails.shopAddress}`
+              },
+              {
+                "type": "mrkdwn",
+                "text": `*Telephone:* ${message.shopDetails.telephone}`
+              },
+              {
+                "type": "mrkdwn",
+                "text": `*Open Time:* ${message.shopDetails.openTime} - ${message.shopDetails.closeTime}`
+              }
+            ]
+          },
+        ]
+      }
+      ,
       {
         headers: { "Content-Type": "application/json" },
       }
     );
+    logger.info("send information to slack: " + slackUrl)
     return response.data;
   } catch (error) {
     console.error(
       "Slack Webhook Error:",
       error.response?.data || error.message
     );
-    // throw new Error("Failed to send message to Slack");
   }
 };
 

@@ -51,7 +51,7 @@ export async function bookingReservation(req, res) {
         message: Messages.RSV_3001,
         data: result,
       });
-      sendSlackMessage(JSON.stringify(result))
+      sendSlackMessage(result, req.user)
     } else {
       res.status(StatusCodes.NOT_FOUND).json({
         status: StatusMessages.FAILED,
