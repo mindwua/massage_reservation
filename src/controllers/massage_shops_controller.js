@@ -100,8 +100,8 @@ export async function getAllMassageShops(req, res) {
             status: StatusMessages.SUCCESS,
             count: totalShops,
             page: page,
-            totalPages: Math.ceil(totalShops / limit),
-            shops: formattedShops
+            totalPages: Math.ceil(totalShops / limit) == 0 ? 1 : Math.ceil(totalShops / limit),
+            data: formattedShops
 
         });
     } catch (error) {

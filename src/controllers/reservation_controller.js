@@ -115,6 +115,7 @@ export async function getReservation(req, res) {
       code: Codes.RSV_3005,
       count: result.length,
       page: page,
+      totalPages: Math.ceil(result.length / limit) == 0 ? 1 : Math.ceil(result.length / limit),
       message: Messages.RSV_3005,
       data: result,
     });
@@ -200,14 +201,14 @@ export async function updateStatusReservation(req, res) {
     const { bookingId } = req.params;
     const { isAdmin, userId } = req.user;
     logger.info(`bookingId >>>> ${bookingId}`);
-    
+
     const result = await ReservationServiceModel.updateStatusWithRole(
       isAdmin,
       userId,
       bookingId,
       req.body
     );
-    
+
     if (!result) {
       return res.status(StatusCodes.NOT_FOUND).json({
         status: StatusMessages.FAILED,
@@ -229,4 +230,5 @@ export async function updateStatusReservation(req, res) {
       code: Codes.GNR_1001,
       message: Messages.GNR_1001,
     });
-  }}
+  }
+}
