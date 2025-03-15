@@ -77,7 +77,6 @@ class ReservationServiceModel {
       logger.info("🔍 Running Aggregation...");
 
       const matchStage = {};
-
       if (userId && !isAdmin) matchStage.userId = userId;
       if (reqQuery?.userId && isAdmin) matchStage.userId = reqQuery.userId;
       if (reqQuery?.shopId) matchStage.shopId = new mongoose.Types.ObjectId(reqQuery.shopId);
@@ -127,7 +126,6 @@ class ReservationServiceModel {
         ...reservation,
         date: formatDate(reservation.date), // Convert to string format
       }));
-      console.log(results)
       return results
     } catch (error) {
       throw new Error(error)

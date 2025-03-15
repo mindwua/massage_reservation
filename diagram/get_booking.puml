@@ -1,0 +1,63 @@
+@startuml
+participant Client
+participant Server
+participant ReservationRouter as "ReservationRouter"
+participant VerifyToken
+participant ReservationController as "ReservationController"
+participant ReservationModel as "ReservationModel"
+
+Client -> Server: req.post('/api/v1/booking')
+activate Server
+Server -> ReservationRouter: app.use("/api/v1", verifyToken, getReservation)
+activate ReservationRouter
+
+ReservationRouter -> VerifyToken: verifyToken()
+activate VerifyToken
+VerifyToken -> VerifyToken: Extract token from headers
+activate VerifyToken
+deactivate VerifyToken
+
+
+alt Token is missing
+    VerifyToken --> Client: 401 Unauthorized (TKN_6001)
+else Token is blacklisted
+    VerifyToken --> Client: 401 Unauthorized (TKN_6002)
+else Token is valid
+    VerifyToken --> ReservationRouter: next()
+deactivate VerifyToken
+end
+
+ReservationRouter -> ReservationController: getReservation(req, res)
+deactivate ReservationRouter
+activate ReservationController
+
+alt User is Admin
+    ReservationController -> ReservationModel: runAggregation(isAdmin,req.query,userId,skip,limit)
+    activate ReservationModel
+    deactivate ReservationModel
+else Admin request specific data
+    ReservationController -> ReservationModel: runAggregation(isAdmin)
+    activate ReservationModel
+    deactivate ReservationModel
+end
+
+alt User is not Admin
+    ReservationController -> ReservationModel: runAggregation(isAdmin,req.query,userId,skip,limit)
+    activate ReservationModel
+    deactivate ReservationModel
+else User request specific data
+    ReservationController -> ReservationModel: runAggregation(isAdmin,null,userId,skip,limit)
+    activate ReservationModel
+    deactivate ReservationModel
+end
+
+    ReservationController --> Server: Response Data
+    deactivate ReservationController
+alt Get reservation successfully
+    Server --> Client: 200 OK (RSV_3005)
+else Internal Server Error   
+    Server --> Client: 500 SERVER_ERROR (GNR_1001)
+    deactivate Server
+end
+
+@enduml

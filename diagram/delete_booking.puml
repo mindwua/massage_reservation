@@ -1,0 +1,72 @@
+@startuml
+participant Client
+participant Server
+participant ReservationRouter as "ReservationRouter"
+participant VerifyToken
+participant ValidateBody
+participant ReservationController as "ReservationController"
+participant ReservationModel as "ReservationModel"
+participant SlackService
+
+Client -> Server: req.delete('/api/v1/booking')
+activate Server
+Server -> ReservationRouter: app.use("/api/v1", verifyToken, validateBody, deleteReservation)
+activate ReservationRouter
+
+ReservationRouter -> VerifyToken: verifyToken()
+activate VerifyToken
+VerifyToken -> VerifyToken: Extract token from headers
+activate VerifyToken
+deactivate VerifyToken
+
+alt Token is missing
+    VerifyToken --> Client: 401 Unauthorized (TKN_6001)
+else Token is blacklisted
+    VerifyToken --> Client: 401 Unauthorized (TKN_6002)
+else Token is valid
+    VerifyToken -> ReservationRouter: next()
+    deactivate VerifyToken
+end
+
+ReservationRouter -> ValidateBody: validateBody(bookingSchema)
+activate ValidateBody
+
+alt Invalid data format
+    ValidateBody --> Client: 400 Invalid data format (VAL_4004)
+end
+deactivate ValidateBody
+
+ReservationRouter -> ReservationController: deleteReservation(req,res)
+deactivate ReservationRouter
+activate ReservationController
+
+ReservationController -> ReservationModel: deleteWithRole(isAdmin, userId, bookingId)
+activate ReservationModel
+
+alt role Admin
+    ReservationModel -> ReservationModel: findOneAndDelete(bookingId, userId)
+    activate ReservationModel
+    deactivate ReservationModel
+else role User
+    ReservationModel -> ReservationModel: findOneAndDelete(bookingId)
+    activate ReservationModel
+    deactivate ReservationModel
+end
+
+ReservationModel --> ReservationController: Response with reservation data
+deactivate ReservationModel
+
+ReservationController -> SlackService: sendSlack()
+activate SlackService
+deactivate SlackService
+ReservationController --> Server: Response data
+deactivate ReservationController
+
+alt Delete reservation successfully
+    Server --> Client: 200 OK (RSV_3008)
+else Delete reservation failed: Reservation not found
+    Server --> Client: 404 NOT_FOUND (RSV_3008)
+else Delete reservation failed
+    Server -> Client: 500 SERVER_ERROR (GNR_1001)
+end
+@enduml

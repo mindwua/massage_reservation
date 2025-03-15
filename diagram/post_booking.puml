@@ -1,0 +1,90 @@
+@startuml
+participant Client
+participant Server
+participant ReservationRouter as "ReservationRouter"
+participant VerifyToken
+participant ValidateBody
+participant ReservationController as "ReservationController"
+participant ReservationModel as "ReservationModel"
+participant SlackService
+
+Client -> Server: req.post('/api/v1/booking')
+activate Server
+Server -> ReservationRouter: app.use("/api/v1", verifyToken, validateBody, bookingReservation)
+activate ReservationRouter
+
+ReservationRouter -> VerifyToken: verifyToken()
+activate VerifyToken
+VerifyToken -> VerifyToken: Extract token from headers
+activate VerifyToken
+deactivate VerifyToken
+
+alt Token is missing
+    VerifyToken --> Client: 401 Unauthorized (TKN_6001)
+    ' deactivate VerifyToken
+    ' deactivate ReservationRouter
+    ' deactivate Server
+else Token is blacklisted
+    VerifyToken --> Client: 401 Unauthorized (TKN_6002)
+    ' deactivate VerifyToken
+    ' deactivate ReservationRouter
+    ' deactivate Server
+else Token is valid
+    VerifyToken -> ReservationRouter: next()
+    deactivate VerifyToken
+end
+
+ReservationRouter -> ValidateBody: validateBody(bookingSchema)
+activate ValidateBody
+
+alt Invalid data format
+    ValidateBody --> Client: 400 Invalid data format (VAL_4004)
+end
+deactivate ValidateBody
+
+ReservationRouter -> ReservationController: bookingReservation()
+deactivate ReservationRouter
+activate ReservationController
+
+ReservationController -> ReservationController: validateShop(shopId)
+activate ReservationController
+deactivate ReservationController
+
+
+ReservationController -> MessageShopModel: find(shopId)
+activate MessageShopModel
+deactivate MessageShopModel
+ReservationController -> ReservationModel: createBooking(reservationModel, startOfDay, endOfDay)
+activate ReservationModel
+
+ReservationModel -> MessageShopModel: fetchShopDetail(shopId)
+activate MessageShopModel
+deactivate MessageShopModel
+ReservationModel -> ReservationModel: find(startOfDay, endOfDay, "pending")
+activate ReservationModel
+deactivate ReservationModel
+ReservationModel -> ReservationModel: create(newDate,shopId,userId,shopDetails)
+activate ReservationModel
+deactivate ReservationModel
+
+
+ReservationModel --> ReservationController: Response with reservation data
+deactivate ReservationModel
+
+ReservationController -> SlackService: sendSlack()
+activate SlackService
+deactivate SlackService
+ReservationController --> Server: Response data
+deactivate ReservationController
+
+alt Reservation created successfully
+    Server --> Client: 200 OK (RSV_3001)
+else Reservation creation failed: Shop not found
+    Server --> Client: 404 NOT_FOUND (RSV_3003)
+else User has too many pending reservations for this date
+    Server --> Client: 400 BAD_REQUEST (RSV_3004)
+else Internal Server Error
+    Server -> Client: 500 SERVER_ERROR (GNR_1001)
+end
+
+@enduml
