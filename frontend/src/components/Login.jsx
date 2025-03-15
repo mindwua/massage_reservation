@@ -30,7 +30,7 @@ function LoginForm() {
 
     try {
       setLoading(true);
-      const res = await axios.post("/api/v1/login", payload);
+      const res = await axios.post("/api/v1/auth/login", payload);
       setResponse(res.data);
       localStorage.setItem("authToken", res.data.data.token);
 

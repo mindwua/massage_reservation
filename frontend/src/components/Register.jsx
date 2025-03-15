@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-
 function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,8 +18,7 @@ function RegisterForm() {
   const [response, setResponse] = useState(null);
   const [error, setError] = useState("");
 
-    const navigate = useNavigate();
-  
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -36,12 +34,12 @@ function RegisterForm() {
       setResponse(res.data);
 
       navigate("/login");
-
     } catch (error) {
       console.error("Error:", error);
       if (error.response) {
         const errorMessage =
-          error.response.data.message || "An error occurred while sending the data.";
+          error.response.data.message ||
+          "An error occurred while sending the data.";
         setError(errorMessage);
       } else {
         setError("An error occurred while connecting.");
@@ -158,21 +156,21 @@ function RegisterForm() {
             )}
           </Button>
 
-                    <Typography
-                      sx={{
-                        marginTop: 2,
-                        textAlign: "center",
-                        color: "#FF1493",
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        "&:hover": {
-                          textDecoration: "underline",
-                        },
-                      }}
-                      onClick={() => navigate("/login")} 
-                    >
-                      Sing In 
-                    </Typography>
+          <Typography
+            sx={{
+              marginTop: 2,
+              textAlign: "center",
+              color: "#FF1493",
+              fontWeight: "bold",
+              cursor: "pointer",
+              "&:hover": {
+                textDecoration: "underline",
+              },
+            }}
+            onClick={() => navigate("/auth/login")}
+          >
+            Sing In
+          </Typography>
         </form>
       </Box>
     </Box>

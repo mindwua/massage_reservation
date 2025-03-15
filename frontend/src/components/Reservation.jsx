@@ -82,7 +82,7 @@ function Reservation() {
       }
 
       await axios.post(
-        "/api/v1/logout",
+        "/api/v1/auth/logout",
         {},
         {
           headers: {

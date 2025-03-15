@@ -155,7 +155,7 @@ const ViewBooking = () => {
         return;
       }
 
-      await axios.post("/api/v1/logout", {
+      await axios.post("/api/v1/auth/logout", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
