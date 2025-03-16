@@ -1,0 +1,114 @@
+@startuml
+
+title "Manage Message Rervation(POST)"
+
+
+participant Client
+participant Server
+participant ReservationRouter as "ReservationRouter"
+participant Middleware
+participant ReservationController as "ReservationController"
+participant ReservationModel as "ReservationModel"
+participant MessageShopModel as "MessageShopModel"
+participant SlackService
+database "<<MongoDB>>\n:reservations" as ReservationDatabase
+database "<<MongoDB>>\n:message_shops" as MessageShopModelnDatabase
+
+Client -> Server: req.post('/api/v1/booking')
+activate Server
+Server -> ReservationRouter: app.use("/api/v1", verifyToken, validateBody, bookingReservation)
+activate ReservationRouter
+
+ReservationRouter -> Middleware: verifyToken()
+activate Middleware
+Middleware -> Middleware: Extract token from headers
+activate Middleware
+deactivate Middleware
+
+alt Token is missing
+    Middleware --> Client: 401 Unauthorized (TKN_6001)
+    ' deactivate Middleware
+    ' deactivate ReservationRouter
+    ' deactivate Server
+else Token is blacklisted
+    Middleware --> Client: 401 Unauthorized (TKN_6002)
+    ' deactivate Middleware
+    ' deactivate ReservationRouter
+    ' deactivate Server
+else Token is valid
+    Middleware -> ReservationRouter: next()
+    deactivate Middleware
+end
+
+ReservationRouter -> Middleware: validateBody(bookingSchema)
+activate Middleware
+
+alt Invalid data format
+    Middleware --> Client: 400 Invalid data format (VAL_4004)
+end
+deactivate Middleware
+
+ReservationRouter -> ReservationController: bookingReservation()
+deactivate ReservationRouter
+activate ReservationController
+
+ReservationController -> ReservationController: validateShop(shopId)
+activate ReservationController
+deactivate ReservationController
+
+
+ReservationController -> MessageShopModel: find(shopId)
+activate MessageShopModel
+MessageShopModel -> MessageShopModelnDatabase: MessageShopSchema
+activate MessageShopModelnDatabase
+MessageShopModelnDatabase -> MessageShopModel: message shop
+deactivate MessageShopModelnDatabase
+deactivate MessageShopModel
+MessageShopModel --> ReservationController
+ReservationController -> ReservationModel: createBooking(reservationModel, startOfDay, endOfDay)
+activate ReservationModel
+
+ReservationModel -> MessageShopModel: fetchShopDetail(shopId)
+activate MessageShopModel
+MessageShopModel -> MessageShopModelnDatabase: MessageShopSchema
+activate MessageShopModelnDatabase
+MessageShopModelnDatabase --> MessageShopModel: message shop details
+deactivate MessageShopModelnDatabase
+deactivate MessageShopModel
+MessageShopModel --> ReservationModel
+ReservationModel -> ReservationModel: find(startOfDay, endOfDay, "pending")
+activate ReservationModel
+ReservationModel -> ReservationDatabase: ReservationSchema
+activate ReservationDatabase
+ReservationDatabase -> ReservationModel: reservation
+deactivate ReservationDatabase
+deactivate ReservationModel
+ReservationModel -> ReservationModel: create(newDate,shopId,userId,shopDetails)
+activate ReservationModel
+ReservationModel -> ReservationDatabase: ReservationSchema
+activate ReservationDatabase
+ReservationDatabase -> ReservationModel: reservation
+deactivate ReservationDatabase
+deactivate ReservationModel
+
+
+ReservationModel --> ReservationController: Response with reservation data
+deactivate ReservationModel
+
+ReservationController -> SlackService: sendSlack()
+activate SlackService
+deactivate SlackService
+' ReservationController --> Server: Response data
+' deactivate ReservationController
+
+alt Reservation created successfully
+    ReservationController --> Client: 200 OK (RSV_3001)
+else Reservation creation failed: Shop not found
+    ReservationController --> Client: 404 NOT_FOUND (RSV_3003)
+else User has too many pending reservations for this date
+    ReservationController --> Client: 400 BAD_REQUEST (RSV_3004)
+else Internal Server Error
+    ReservationController -> Client: 500 SERVER_ERROR (GNR_1001)
+deactivate ReservationController
+end
+@enduml

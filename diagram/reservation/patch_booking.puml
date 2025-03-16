@@ -1,0 +1,98 @@
+@startuml
+
+title "Manage Message Rervation(PATCH)"
+
+
+participant Client
+participant Server
+participant ReservationRouter as "ReservationRouter"
+participant Middleware
+participant ReservationController as "ReservationController"
+participant ReservationModel as "ReservationModel"
+participant SlackService
+database "<<MongoDB>>\n:reservations" as ReservationDatabase
+
+Client -> Server: req.patch('/api/v1/booking/:id')
+activate Server
+Server -> ReservationRouter: app.use("/api/v1", verifyToken, validateParam, updateStatusReservation)
+activate ReservationRouter
+
+ReservationRouter -> Middleware: verifyToken()
+activate Middleware
+Middleware -> Middleware: Extract token from headers
+activate Middleware
+deactivate Middleware
+
+alt Token is missing
+    Middleware --> Client: 401 Unauthorized (TKN_6001)
+else Token is blacklisted
+    Middleware --> Client: 401 Unauthorized (TKN_6002)
+else Token is valid
+    Middleware -> ReservationRouter: next()
+    deactivate Middleware
+end
+
+ReservationRouter -> Middleware: validateParam(bookingRunningSchema)
+
+activate Middleware
+alt Invalid data format
+    Middleware --> Client: 400 Invalid data format (VAL_4004)
+else data format is valid    
+    Middleware -> ReservationRouter:  next()
+end
+deactivate Middleware
+
+ReservationRouter -> Middleware: validateBody(bodyPutSchema)
+activate Middleware
+alt Invalid data format
+    Middleware --> Client: 400 Invalid data format (VAL_4004)
+else data format is valid    
+    Middleware -> ReservationRouter:  next()
+end
+deactivate Middleware
+
+ReservationRouter -> ReservationController: updateStatusReservation(req, res)
+deactivate ReservationRouter
+
+activate ReservationController
+
+ReservationController -> ReservationModel: updateStatusWithRole(isAdmin,userId,bookingId,req.body)
+activate ReservationModel
+
+alt role Admin
+    ReservationModel -> ReservationModel: findOneAndUpdate(date, shopId, userId)
+    activate ReservationModel
+    ReservationModel -> ReservationDatabase: ReservetionSchema
+    activate ReservationDatabase
+    ReservationDatabase -> ReservationModel: reservation
+    deactivate ReservationDatabase
+    deactivate ReservationModel
+else role User
+    ReservationModel -> ReservationModel: findOneAndUpdate(date, shopId)
+    activate ReservationModel
+    ReservationModel -> ReservationDatabase: ReservetionSchema
+    activate ReservationDatabase
+    ReservationDatabase -> ReservationModel: reservation
+    deactivate ReservationDatabase
+    deactivate ReservationModel
+end
+
+
+ReservationModel --> ReservationController: Response with reservation data
+deactivate ReservationModel
+
+ReservationController -> SlackService: sendSlack()
+activate SlackService
+deactivate SlackService
+' ReservationController --> Server: Response data
+' deactivate ReservationController
+
+alt Update reservation successfully
+    ReservationController --> Client: 200 OK (RSV_3010)
+else Update reservation failed Reservation not found
+    ReservationController --> Client: 404 NOT FOUND (RSV_3004)
+else Internal Server Error
+    ReservationController -> Client: 500 SERVER_ERROR (GNR_1001)
+deactivate ReservationController
+end
+@enduml

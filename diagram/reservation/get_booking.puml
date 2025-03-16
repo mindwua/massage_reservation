@@ -8,7 +8,7 @@ participant ReservationRouter as "ReservationRouter"
 participant Middleware
 participant ReservationController as "ReservationController"
 participant ReservationModel as "ReservationModel"
-database "<<MongoDB>>\n:message_shops" as ReservationDatabase
+database "<<MongoDB>>\n:reservations" as ReservationDatabase
 
 Client -> Server: req.post('/api/v1/booking')
 activate Server
@@ -69,13 +69,13 @@ else  Account is User request specific data
     deactivate ReservationModel
 end
 
-    ReservationController --> Server: Response Data
-    deactivate ReservationController
+    ' ReservationController --> Server: Response Data
+    ' deactivate Server
 alt Get reservation successfully
-    Server --> Client: 200 OK (RSV_3005)
+    ReservationController --> Client: 200 OK (RSV_3005)
 else Internal Server Error   
-    Server --> Client: 500 SERVER_ERROR (GNR_1001)
-    deactivate Server
+    ReservationController --> Client: 500 SERVER_ERROR (GNR_1001)
+    deactivate ReservationController
 end
 
 @enduml

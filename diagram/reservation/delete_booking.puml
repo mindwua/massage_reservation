@@ -1,0 +1,85 @@
+@startuml
+
+title "Manage Message Rervation(DELETE)"
+
+
+participant Client
+participant Server
+participant ReservationRouter as "ReservationRouter"
+participant Middleware
+participant ReservationController as "ReservationController"
+participant ReservationModel as "ReservationModel"
+participant SlackService
+database "<<MongoDB>>\n:reservations" as ReservationDatabase
+
+Client -> Server: req.delete('/api/v1/booking')
+activate Server
+Server -> ReservationRouter: app.use("/api/v1", verifyToken, validateBody, deleteReservation)
+activate ReservationRouter
+
+ReservationRouter -> Middleware: verifyToken()
+activate Middleware
+Middleware -> Middleware: Extract token from headers
+activate Middleware
+deactivate Middleware
+
+alt Token is missing
+    Middleware --> Client: 401 Unauthorized (TKN_6001)
+else Token is blacklisted
+    Middleware --> Client: 401 Unauthorized (TKN_6002)
+else Token is valid
+    Middleware -> ReservationRouter: next()
+    deactivate Middleware
+end
+
+ReservationRouter -> Middleware: validateBody(bookingSchema)
+activate Middleware
+
+alt Invalid data format
+    Middleware --> Client: 400 Invalid data format (VAL_4004)
+end
+deactivate Middleware
+
+ReservationRouter -> ReservationController: deleteReservation(req,res)
+deactivate ReservationRouter
+activate ReservationController
+
+ReservationController -> ReservationModel: deleteWithRole(isAdmin, userId, bookingId)
+activate ReservationModel
+
+alt role Admin
+    ReservationModel -> ReservationModel: findOneAndDelete(bookingId, userId)
+    activate ReservationModel
+    ReservationModel -> ReservationDatabase: ReservetionSchema
+    activate ReservationDatabase
+    ReservationDatabase -> ReservationModel: reservation
+    deactivate ReservationDatabase
+    deactivate ReservationModel
+else role User
+    ReservationModel -> ReservationModel: findOneAndDelete(bookingId)
+    activate ReservationModel
+    ReservationModel -> ReservationDatabase: ReservetionSchema
+    activate ReservationDatabase
+    ReservationDatabase -> ReservationModel: reservation
+    deactivate ReservationDatabase
+    deactivate ReservationModel
+end
+
+ReservationModel --> ReservationController: Response with reservation data
+deactivate ReservationModel
+
+ReservationController -> SlackService: sendSlack()
+activate SlackService
+deactivate SlackService
+' ReservationController --> Server: Response data
+' deactivate ReservationController
+
+alt Update reservation successfully
+    ReservationController --> Client: 200 OK (RSV_3010)
+else Update reservation failed Reservation not found
+    ReservationController --> Client: 404 NOT FOUND (RSV_3004)
+else Internal Server Error
+    ReservationController -> Client: 500 SERVER_ERROR (GNR_1001)
+deactivate ReservationController
+end
+@enduml
