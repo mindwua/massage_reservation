@@ -1,0 +1,51 @@
+@startuml
+
+title "Manage Authencation Verify Token(POST)"
+
+participant Client
+participant Server
+participant AccountRouter
+participant Middleware
+participant AccountController
+database "<<Redis>>\n:blacklisted" as Redis
+
+Client -> Server: req.get('/api/v1/auth/verifyToken')
+activate Server
+Server -> AccountRouter: app.use("/api/v1/auth", verifyToken, logoutUser)
+activate AccountRouter
+
+AccountRouter -> Middleware: verifyToken()
+activate Middleware
+Middleware -> Middleware: Extract token from headers
+activate Middleware
+deactivate Middleware
+
+
+alt Token is missing
+    Middleware --> Client: 401 Unauthorized (TKN_6001)
+else Token is blacklisted
+    Middleware --> Client: 401 Unauthorized (TKN_6002)
+else Token is valid
+    Middleware --> AccountRouter: next()
+    deactivate Middleware
+    activate AccountController
+    AccountRouter -> AccountController: verifyTokenUser(req, res)
+    deactivate AccountRouter
+    alt token not exist
+        AccountController --> Client: 403 FORBIDDEN (TKN_6001)
+    else token exist
+        AccountController -> AccountController: verify(token, JWT_SECRET)
+        ' activate AccountController
+        ' AccountController --> Server: Response data
+        ' deactivate AccountController
+        alt logout success
+            AccountController --> Client: 200 OK (TKN_2000)
+        else logout failed
+            AccountController --> Client: 500 SERVER_ERROR (SRV_5001)
+        deactivate AccountController
+        end
+    end
+end
+
+
+@enduml

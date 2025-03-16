@@ -1,0 +1,54 @@
+@startuml
+
+title "Manage Authencation Login(POST)"
+
+participant Client
+participant Server
+participant AccountRouter as "AccountRouter"
+participant AccountController
+participant AccountModel as "AccountModel"
+database "<<MongoDB>>\n:accounts" as AccountDatabase
+
+Client -> Server: req.post('/api/v1/auth/login')
+activate Server
+Server -> AccountRouter: app.use("/api/v1/auth", loginUser)
+activate AccountRouter
+AccountRouter -> AccountController: loginUser(req, res)
+deactivate AccountRouter
+activate AccountController
+AccountController -> AccountController: extract body
+activate AccountController
+deactivate AccountController
+AccountController -> AccountModel: findOne(email)
+activate AccountModel
+AccountModel -> AccountDatabase: AccountSchema
+activate AccountDatabase
+AccountDatabase --> AccountModel: account 
+deactivate AccountDatabase
+deactivate AccountModel
+alt user not exist
+    AccountController --> Client:401 UNAUTHORIZED (LGN_2003)
+else user exist
+    AccountController -> AccountController: comparePassword(password, user.password)
+    activate AccountController
+    deactivate AccountController
+    alt not match
+        AccountController --> Client:401 UNAUTHORIZED (LGN_2002)
+    else match
+        AccountController -> AccountController: signToken()
+            alt Registration successfully
+                AccountController --> Client: 201 CREATE LGN_2001
+            else Internal Server Error  
+                AccountController --> Client: 500 SERVER ERROR
+        deactivate AccountController
+        end
+end
+end
+deactivate AccountController
+deactivate Server
+
+
+
+
+
+@enduml

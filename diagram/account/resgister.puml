@@ -1,0 +1,83 @@
+@startuml
+
+title "Manage Account(POST)"
+
+participant Client
+participant Server
+participant AccountRouter as "AccountRouter"
+' participant VerifyToken
+' participant ValidateBody
+' participant ReservationController as "ReservationController"
+' participant ReservationModel as "ReservationModel"
+' participant SlackService
+participant AccountController as "AccountController"
+participant AccountModel as "AccountModel"
+database "<<MongoDB>>\n:accounts" as AccountDatabase
+
+Client -> Server: req.post('/api/v1/register')
+activate Server
+Server -> AccountRouter: app.use("/api/v1", createAccount)
+activate AccountRouter
+AccountRouter -> AccountController: createAccount()
+deactivate AccountRouter
+activate AccountController
+AccountController -> AccountController: extract body
+activate AccountController
+deactivate AccountController
+    AccountController -> AccountController: validate data
+    activate AccountController
+    deactivate AccountController
+    alt validate failed
+        AccountController --> Client:400 BAD_REQUEST (4001)
+    else validate success
+        AccountController -> AccountModel: checkExistingAccount(email)
+        activate AccountModel
+        AccountModel -> AccountDatabase: AccountSchema
+        activate AccountDatabase
+        AccountDatabase --> AccountModel: account
+        deactivate AccountDatabase
+        AccountModel --> AccountController
+        deactivate AccountModel
+        AccountController -> AccountModel: checkExistingAccount(name)
+        activate AccountModel
+        AccountModel -> AccountDatabase: AccountSchema
+        activate AccountDatabase
+        AccountDatabase --> AccountModel: account
+        deactivate AccountDatabase
+        AccountModel --> AccountController
+        deactivate AccountModel
+        alt exist
+            AccountController --> Client: 400 BAD_REQUEST (RG1004-5)
+        else not exist
+            AccountController -> AccountController: hash password
+            activate AccountController
+            deactivate AccountController
+            AccountController -> AccountModel: create(newAccount)
+            activate AccountModel
+            AccountModel -> AccountDatabase: AccountSchema
+            activate AccountDatabase
+            AccountDatabase --> AccountModel: account
+            deactivate AccountDatabase
+            ' AccountModel --> AccountController: Return Response
+            AccountModel --> AccountController
+            deactivate AccountModel
+            ' AccountController --> Server : Return Response
+            alt Registration successfully
+                AccountController --> Client: 201 CREATE REG_1001
+            else Internal Server Error  
+                AccountController --> Client: 500 SERVER ERROR
+            deactivate AccountController
+            deactivate Server
+        end
+        ' activate AccountController
+        ' deactivate AccountController
+    end
+end
+' deactivate AccountController
+' deactivate Server
+
+
+
+
+
+@enduml

@@ -52,13 +52,14 @@ else found message shops
     MessageShopDatabase --> MessageShopModel: counts
     deactivate MessageShopDatabase
     deactivate MessageShopModel
-    MessageShopController --> Server: Response Data
-        deactivate MessageShopController
+    ' MessageShopController --> Server: Response Data
+    ' deactivate MessageShopController
 alt Get reservation successfully
-    Server --> Client: 200 OK (RSV_3005)
+    MessageShopController --> Client: 200 OK (RSV_3005)
 else Internal Server Error   
-    Server --> Client: 500 SERVER_ERROR (GNR_1001)
+    MessageShopController --> Client: 500 SERVER_ERROR (GNR_1001)
     deactivate Server
+    deactivate MessageShopController
 end
 end
 

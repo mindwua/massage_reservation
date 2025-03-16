@@ -1,0 +1,52 @@
+@startuml
+
+title "Manage Authencation Logout(POST)"
+
+participant Client
+participant Server
+participant AccountRouter
+participant Middleware
+participant AccountController
+database "<<Redis>>\n:blacklisted" as Redis
+
+Client -> Server: req.post('/api/v1/auth/logout')
+activate Server
+Server -> AccountRouter: app.use("/api/v1/auth", verifyToken, logoutUser)
+activate AccountRouter
+
+AccountRouter -> Middleware: verifyToken()
+activate Middleware
+Middleware -> Middleware: Extract token from headers
+activate Middleware
+deactivate Middleware
+
+
+alt Token is missing
+    Middleware --> Client: 401 Unauthorized (TKN_6001)
+else Token is blacklisted
+    Middleware --> Client: 401 Unauthorized (TKN_6002)
+else Token is valid
+    Middleware --> AccountRouter: next()
+    deactivate Middleware
+    AccountRouter -> AccountController: logoutUser(req, res)
+    deactivate AccountRouter
+    activate AccountController
+    alt token not exist
+        AccountController --> Client: 403 FORBIDDEN (TKN_6001)
+    else token exist
+        AccountController -> Redis: addToBlacklist(token)
+        activate Redis
+        Redis --> AccountController
+        deactivate Redis
+        ' AccountController --> Server: Response data
+        alt logout success
+            AccountController --> Client: 200 OK (LOT_5001)
+        else logout failed
+            AccountController --> Client: 500 SERVER_ERROR (GNR_1001)
+        deactivate AccountController
+        end
+    end
+end
+
+
+@enduml
