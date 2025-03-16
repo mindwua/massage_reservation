@@ -74,9 +74,9 @@ deactivate SlackService
 ' ReservationController --> Server: Response data
 ' deactivate ReservationController
 
-alt Update reservation successfully
+alt Delete reservation successfully
     ReservationController --> Client: 200 OK (RSV_3010)
-else Update reservation failed Reservation not found
+else Delete reservation failed Reservation not found
     ReservationController --> Client: 404 NOT FOUND (RSV_3004)
 else Internal Server Error
     ReservationController -> Client: 500 SERVER_ERROR (GNR_1001)

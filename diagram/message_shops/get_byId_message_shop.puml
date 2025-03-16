@@ -10,7 +10,7 @@ participant MessageShopController as "MessageShopController"
 participant MessageShopModel as "MessageShopModel"
 database "<<MongoDB>>\n:message_shops" as MessageShopDatabase
 
-Client -> Server: req.post('/api/v1/massage-shops')
+Client -> Server: req.post('/api/v1/massage-shops/:id')
 activate Server
 Server -> MessageShopRouter: app.use("/api/v1", verifyToken, getAllMassageShops)
 activate MessageShopRouter
@@ -35,7 +35,7 @@ MessageShopRouter -> MessageShopController: getAllMassageShops(req, res)
 deactivate MessageShopRouter
 activate MessageShopController
 
-MessageShopController -> MessageShopModel: find()
+MessageShopController -> MessageShopModel: findById(shopId)
 activate MessageShopModel
 MessageShopModel -> MessageShopDatabase: MessageShopSchema
 activate MessageShopDatabase
@@ -45,15 +45,6 @@ deactivate MessageShopModel
 alt not found message shops
     MessageShopController -> Client: 404 NOT_FOUND
 else found message shops
-    MessageShopController -> MessageShopModel: countDocuments()
-    activate MessageShopModel
-    MessageShopModel -> MessageShopDatabase: MessageShopSchema
-    activate MessageShopDatabase
-    MessageShopDatabase --> MessageShopModel: counts
-    deactivate MessageShopDatabase
-    deactivate MessageShopModel
-    ' MessageShopController --> Server: Response Data
-    ' deactivate MessageShopController
 alt Get message shop successfully
     MessageShopController --> Client: 200 OK (RSV_3005)
 else Internal Server Error   

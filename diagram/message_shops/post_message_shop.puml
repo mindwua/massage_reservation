@@ -1,0 +1,81 @@
+@startuml
+
+title "Manage Message Shop(POST)"
+
+participant Client
+participant Server
+participant MessageShopRouter as "MessageShopRouter"
+participant Middleware
+participant MessageShopController as "MessageShopController"
+participant MessageShopModel as "MessageShopModel"
+database "<<MongoDB>>\n:message_shops" as MessageShopDatabase
+
+Client -> Server: req.post('/api/v1/massage-shops')
+activate Server
+Server -> MessageShopRouter: app.use("/api/v1", verifyToken, createMassageShop)
+activate MessageShopRouter
+
+MessageShopRouter -> Middleware: verifyToken()
+activate Middleware
+Middleware -> Middleware: Extract token from headers
+activate Middleware
+deactivate Middleware
+
+
+alt Token is missing
+    Middleware --> Client: 401 Unauthorized (TKN_6001)
+else Token is blacklisted
+    Middleware --> Client: 401 Unauthorized (TKN_6002)
+else Token is valid
+    Middleware --> MessageShopRouter: next()
+deactivate Middleware
+end
+
+MessageShopRouter -> MessageShopController: createMassageShop(req, res)
+deactivate MessageShopRouter
+activate MessageShopController
+
+MessageShopController -> MessageShopController: extract req.body
+activate MessageShopController
+deactivate MessageShopController
+alt body is invalid
+    MessageShopController -> Client: 400 BAD_REQUEST (VAL_4001)
+else body is valid
+    MessageShopController -> MessageShopController: checkAuthorize(req.user, isAdmin)
+    activate MessageShopController
+    deactivate MessageShopController
+    alt isAdmin != true
+        MessageShopController --> Client: 401 UNAUTHORIZED (MGS_1003)
+    else isAdmin == true
+        MessageShopController -> MessageShopModel: findOne(shopName)
+        activate MessageShopModel
+        MessageShopModel -> MessageShopDatabase: MessageshopSchema
+        activate MessageShopDatabase
+        MessageShopDatabase --> MessageShopModel: message shop
+        deactivate MessageShopDatabase
+        deactivate MessageShopModel
+        MessageShopModel --> MessageShopController
+        alt shopName exist
+            MessageShopController --> Client: 400 BAD_REQUEST (MGS_1002)
+        else shopName not exist
+            MessageShopController -> MessageShopModel: save()
+            activate MessageShopModel
+            MessageShopModel -> MessageShopDatabase: MessageshopSchema
+            activate MessageShopDatabase
+            MessageShopDatabase --> MessageShopModel: message shop
+            deactivate MessageShopDatabase
+            deactivate MessageShopModel
+            MessageShopModel --> MessageShopController
+
+alt Create message shop successfully
+    MessageShopController --> Client: 201 CREATED (MGS_1001)
+else Internal Server Error   
+    MessageShopController --> Client: 500 SERVER_ERROR (GNR_1001)
+    deactivate Server
+    deactivate MessageShopController
+            end
+        end
+    end
+end
+
+@enduml
