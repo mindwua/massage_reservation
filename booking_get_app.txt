@@ -1,0 +1,15 @@
+title Manage Hospital (PUT)
+
+Client [icon: monitor] > Server [icon: server]: req.put('/api/v1/hospitals/:id')
+activate Client
+Server > Router [icon: tool, color: lightblue]: app.use('/api/v1/hospitals', hospitals)
+Router > Controller [icon: tool, color: lightgreen]: updateHospital()
+Controller > Model [icon: database, color: orange]: select(req.params.id)
+Model > Database [icon: database, color: purple]: HospitalSchema
+Database --> Model: hospital
+Model > Model: update(req.params.id)
+Model > Database: HospitalSchema
+Database --> Model: hospital
+Controller <-- Model: hospital
+Controller > Client: response
+deactivate Client

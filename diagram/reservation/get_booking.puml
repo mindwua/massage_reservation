@@ -1,53 +1,71 @@
 @startuml
+
+title "Manage Message Rervation(GET)"
+
 participant Client
 participant Server
 participant ReservationRouter as "ReservationRouter"
-participant VerifyToken
+participant Middleware
 participant ReservationController as "ReservationController"
 participant ReservationModel as "ReservationModel"
+database "<<MongoDB>>\n:message_shops" as ReservationDatabase
 
 Client -> Server: req.post('/api/v1/booking')
 activate Server
 Server -> ReservationRouter: app.use("/api/v1", verifyToken, getReservation)
 activate ReservationRouter
 
-ReservationRouter -> VerifyToken: verifyToken()
-activate VerifyToken
-VerifyToken -> VerifyToken: Extract token from headers
-activate VerifyToken
-deactivate VerifyToken
+ReservationRouter -> Middleware: verifyToken()
+activate Middleware
+Middleware -> Middleware: Extract token from headers
+activate Middleware
+deactivate Middleware
 
 
 alt Token is missing
-    VerifyToken --> Client: 401 Unauthorized (TKN_6001)
+    Middleware --> Client: 401 Unauthorized (TKN_6001)
 else Token is blacklisted
-    VerifyToken --> Client: 401 Unauthorized (TKN_6002)
+    Middleware --> Client: 401 Unauthorized (TKN_6002)
 else Token is valid
-    VerifyToken --> ReservationRouter: next()
-deactivate VerifyToken
+    Middleware --> ReservationRouter: next()
+deactivate Middleware
 end
 
 ReservationRouter -> ReservationController: getReservation(req, res)
 deactivate ReservationRouter
 activate ReservationController
 
-alt User is Admin
+alt Account is Admin and not request specific data
     ReservationController -> ReservationModel: runAggregation(isAdmin,req.query,userId,skip,limit)
     activate ReservationModel
+    ReservationModel -> ReservationDatabase: ReservationSchema
+    activate ReservationDatabase
+    ReservationDatabase --> ReservationModel: resvations 
+    deactivate ReservationDatabase
     deactivate ReservationModel
-else Admin request specific data
+else  Account is Admin request specific data
     ReservationController -> ReservationModel: runAggregation(isAdmin)
     activate ReservationModel
+    ReservationModel -> ReservationDatabase: ReservationSchema
+    activate ReservationDatabase
+    ReservationDatabase --> ReservationModel: resvations 
+    deactivate ReservationDatabase
     deactivate ReservationModel
-end
-
-alt User is not Admin
+else Account is User and not request specific data
     ReservationController -> ReservationModel: runAggregation(isAdmin,req.query,userId,skip,limit)
     activate ReservationModel
+    ReservationModel -> ReservationDatabase: ReservationSchema
+    activate ReservationDatabase
+    ReservationDatabase --> ReservationModel: resvations 
+    deactivate ReservationDatabase
     deactivate ReservationModel
-else User request specific data
+else  Account is User request specific data
     ReservationController -> ReservationModel: runAggregation(isAdmin,null,userId,skip,limit)
     activate ReservationModel
+    ReservationModel -> ReservationDatabase: ReservationSchema
+    activate ReservationDatabase
+    ReservationDatabase --> ReservationModel: resvations 
+    deactivate ReservationDatabase
     deactivate ReservationModel
 end
 
