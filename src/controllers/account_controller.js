@@ -60,7 +60,6 @@ export async function createAccount(req, res) {
 
     try {
       await checkExistingAccount('email', email, AccountMongooseModel, Codes.REG_1005, Messages.REG_1005);
-      await checkExistingAccount('name', name, AccountMongooseModel, Codes.REG_1004, Messages.REG_1004);
     } catch (accountError) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         status: StatusMessages.FAILED,
