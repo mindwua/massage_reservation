@@ -9,7 +9,7 @@ import { AccountMongooseModel, AccountServiceModel } from "../models/account_mod
 
 async function validateShop(shopId) {
   try {
-    const found = await MassageShopMongooseModel.find({ shopId: shopId }).countDocuments();
+    const found = await MassageShopMongooseModel.findById( shopId ).countDocuments();
     if (found) {
       return true;
     }

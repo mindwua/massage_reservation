@@ -30,7 +30,7 @@ class ReservationServiceModel {
         bookingId: { type: String, required: true },
         date: { type: Date, required: true },
         status: { type: String, required: true },
-        userId: { type: String, required: true },
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
         shopId: { type: mongoose.Schema.Types.ObjectId, ref: "MassageShop" },
       },
       { timestamps: true }
@@ -78,7 +78,7 @@ class ReservationServiceModel {
 
       const matchStage = {};
       if (userId && !isAdmin) matchStage.userId = userId;
-      if (reqQuery?.userId && isAdmin) matchStage.userId = reqQuery.userId;
+      if (reqQuery?.userId && isAdmin) matchStage.userId = new mongoose.Types.ObjectId(reqQuery.userId);
       if (reqQuery?.shopId) matchStage.shopId = new mongoose.Types.ObjectId(reqQuery.shopId);
       if (reqQuery?.status) matchStage.status = reqQuery.status;
 
