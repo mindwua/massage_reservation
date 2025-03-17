@@ -5,6 +5,7 @@ import { MassageShopMongooseModel, MassageShopServiceModel } from "../models/mas
 import logger from "../utils/logger_utils.js";
 import { sendSlackMessage } from "../utils/slack.js";
 import { convertDateToISO, rangeDate } from "../utils/date_utils.js";
+import { AccountMongooseModel, AccountServiceModel } from "../models/account_models.js";
 
 async function validateShop(shopId) {
   try {
@@ -20,13 +21,24 @@ async function validateShop(shopId) {
 
 export async function bookingReservation(req, res) {
   try {
+    let exist
     const formattedDate = convertDateToISO(req.body.date);
     const { startOfDay, endOfDay } = rangeDate(formattedDate);
-    const reservationModel = new ReservationServiceModel(
-      formattedDate,
-      req.body.shopId,
-      req.user.userId
-    );
+    let reservationModel = {}
+    if (req.user.isAdmin == true) {
+      reservationModel = new ReservationServiceModel(
+        formattedDate,
+        req.body.shopId,
+        req.body.user
+      );
+    } else {
+      reservationModel = new ReservationServiceModel(
+        formattedDate,
+        req.body.shopId,
+        req.user.userId
+      );
+    }
+
 
     const result = await validateShop(reservationModel.shopId);
 

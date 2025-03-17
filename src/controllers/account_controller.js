@@ -33,10 +33,10 @@ const checkExistingAccount = async (field, value, model, errorCode, errorMessage
   }
 };
 
+
 export async function createAccount(req, res) {
   try {
     const { name, password, email, telephone } = req.body;
-
     if (!name || !password || !email || !telephone) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         status: StatusMessages.FAILED,
