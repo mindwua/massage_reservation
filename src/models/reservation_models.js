@@ -58,7 +58,7 @@ class ReservationServiceModel {
         const createdReservation = await ReservationMongooseModel.create(reservation);
         const formattedResponse = new ReservationServiceModel(
           newDate,
-          createdReservation.shopId,
+          null,
           createdReservation.userId,
           shopDetails,
           createdReservation.bookingId
@@ -159,11 +159,11 @@ class ReservationServiceModel {
       }
       if (result) {
         const newDate = formatDate(result.date)
-        const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
+        const shopDetails = await MassageShopServiceModel.fetchShopDetails(req.shopId)
         formattedResponse = new ReservationServiceModel(
           newDate,
           null,
-          result.userId,
+          req.shopId,
           shopDetails,
           result.bookingId,
 
@@ -191,7 +191,6 @@ class ReservationServiceModel {
       } else {
         result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId }, { $set: matchStage },);
       }
-      console.log(result)
       if (result) {
         const newDate = formatDate(result.date)
         const shopDetails = await MassageShopServiceModel.fetchShopDetails(result.shopId)
