@@ -20,6 +20,19 @@ jobs:
       - name: Install Newman
         run: npm install -g newman
 
+      - name: Install Newman HTML Reporter
+        run: npm install -g newman-reporter-html
+
+      # Start your backend (เลือกแนวทางที่ 2 หรือเปลี่ยน URL ใน collection ไปแนวทางที่ 1)
+      - name: Start backend (Example with npm)
+        run: |
+          npm install
+          npm run start &
+        working-directory: backend  # ปรับ path ให้ตรง project
+
+      - name: Wait for backend to be ready
+        run: sleep 10
+
       - name: Run Newman Collection - Massage Reservation API
         run: |
           newman run "collections/Massage Reservation API - Functional Test.postman_collection.json" \
