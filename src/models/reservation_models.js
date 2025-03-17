@@ -60,7 +60,8 @@ class ReservationServiceModel {
           newDate,
           createdReservation.shopId,
           createdReservation.userId,
-          shopDetails
+          shopDetails,
+          createdReservation.bookingId
         );
         return formattedResponse;
       }
@@ -81,7 +82,6 @@ class ReservationServiceModel {
       if (reqQuery?.userId && isAdmin) matchStage.userId = new mongoose.Types.ObjectId(reqQuery.userId);
       if (reqQuery?.shopId) matchStage.shopId = new mongoose.Types.ObjectId(reqQuery.shopId);
       if (reqQuery?.status) matchStage.status = reqQuery.status;
-
       logger.info(`matchStage >>>>> ${JSON.stringify(matchStage)}`);
 
 
@@ -155,7 +155,7 @@ class ReservationServiceModel {
       if (isAdmin) {
         result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, { $set: matchStage });
       } else {
-        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId, userId: userId }, { $set: matchStage },);
+        result = await ReservationMongooseModel.findOneAndUpdate({ bookingId: bookingId }, { $set: matchStage },);
       }
       if (result) {
         const newDate = formatDate(result.date)

@@ -3,9 +3,9 @@ import { Codes, Enums, Messages, StatusCodes, StatusMessages } from "../enums/en
 import { bookingSchema, bookingAdminSchema } from "../utils/joi_validator_utils.js";
 import logger from "../utils/logger_utils.js";
 
-const validateBody = () => (req, res, next) => {
+const validateBody = (schema) => (req, res, next) => {
     try {
-        const schema = req.user?.isAdmin ? bookingAdminSchema : bookingSchema;
+        // const schema = req.user?.isAdmin ? bookingAdminSchema : bookingSchema;
         logger.info('Start validateBody')
         const { error } = schema.validate(req.body, { abortEarly: false });
 

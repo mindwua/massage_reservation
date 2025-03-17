@@ -127,4 +127,5 @@ export const Messages = Object.freeze({
 
 export const Status = Object.freeze({
   PENDING: "Pending",
+  COMPLETED: "Completed"
 });
