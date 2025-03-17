@@ -36,4 +36,25 @@ const verifyToken = async (req, res, next) => {
     }
 };
 
-export { verifyToken };
+const verifyAdmin = async (req, res, next) => { 
+    try {
+        const { isAdmin } = req.user;
+        if (isAdmin == false) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({
+                status: StatusMessages.FAILED,
+                code: Codes.TKN_6003,
+                message: Messages.TKN_6003,
+            });
+        }
+        next();
+
+    } catch (e) {
+        return res.status(StatusCodes.SERVER_ERROR).json({
+            status: StatusMessages.FAILED,
+            code: Codes.GNR_1001,
+            message: Messages.GNR_1001
+        })
+    }
+}
+
+export { verifyToken, verifyAdmin };
