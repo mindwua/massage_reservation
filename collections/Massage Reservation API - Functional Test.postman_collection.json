@@ -1,0 +1,2318 @@
+{
+	"info": {
+		"_postman_id": "3219eb13-1830-4cb6-8a71-5eba1f088226",
+		"name": "Massage Reservation API - Functional Test",
+		"description": "# 🖇️ Get started here\n\nPostman's [scripting](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) feature allows you to build conditional workflows using a collection. You can branch and loop over a set of requests.\n\nThis template contains a sample conditional workflow for testing successful user creation across a data array.\n\nThe workflow is set to run in successive iterations with different values in each iteration. If the API returns a successful response in an iteration, the next iteration is triggered, and so on. You will get a report of successful user creations when all the iterations are successful. If a user creation fails, the loop is terminated, and you will get a report of the failed attempt.\n\n<img src=\"https://content.pstmn.io/d21cb133-1e04-41f6-9ef6-9aaf85df4e82/aW1hZ2UucG5n\" alt=\"Workflow%20depicting%20the%20collection%20execution\" width=\"638\" height=\"720\">\n\nThe [postman.setNextRequest()](https://learning.postman.com/docs/postman/scripts/branching-and-looping/) function enables you to change the order of requests in a collection while testing. This function allows you to conditionally skip specific requests, repeat requests, terminate the collection early, etc. You can use conditional workflows in various use cases, from [generating a Spotify playlist](https://blog.postman.com/generate-spotify-playlists-using-a-postman-collection/) to [checking your website for broken links](https://blog.postman.com/check-for-broken-links-on-your-website-using-a-postman-collection/).\n\n## 🔖 **How to use this template**\n\n**Step 1:** Open the collection and click on the \"View more actions\" icon.\n\n**Step 2:** Click \"Run Collection\" to open the [collection runner](https://learning.postman.com/docs/running-collections/intro-to-collection-runs/).\n\n**Step 3:** Click on \"Run Conditional Workflow\" to run the collection.\n\n#### Modifying the data\n\nYou can find the data array in the collection variables section, which you can navigate to by clicking on the collection's name in the sidebar and then selecting the Variables tab.\n\nThe data array follows this structure:\n\n``` json\n[\n    {\n        \"username\": \"\",\n        \"name\": \"\",\n        \"role\": \"\"\n    },\n    ...\n]\n\n ```\n\n## 💡Related templates\n\n[Async operations](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=66c7f0e5-065a-4d08-9c7e-0825e9e29e24&sourceTemplateId=78475d97-9a36-4731-ab24-9adf6a94d0fb)  \n[Data visualization](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=c9e72d75-ded7-4135-a721-5d59ddda6d59&sourceTemplateId=78475d97-9a36-4731-ab24-9adf6a94d0fb)  \n[Integration testing](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=fe506090-ca91-4340-bea9-82d2c3d2bb9a&sourceTemplateId=78475d97-9a36-4731-ab24-9adf6a94d0fb)  \n[Reusing requests and scripts](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=0cb2db53-2dee-430b-a0cf-21f1dbb50bb1&sourceTemplateId=78475d97-9a36-4731-ab24-9adf6a94d0fb)  \n[Run collection with data file](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=6a8f6393-58ab-4458-944c-7fc8f08448da&sourceTemplateId=78475d97-9a36-4731-ab24-9adf6a94d0fb)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6950030",
+		"_collection_link": "https://cu5555.postman.co/workspace/CU~e7e3cb02-5ff4-4842-8222-fab5d2ab6b1f/collection/6950030-3219eb13-1830-4cb6-8a71-5eba1f088226?action=share&source=collection_link&creator=6950030"
+	},
+	"item": [
+		{
+			"name": "[REQ-001] Register",
+			"item": [
+				{
+					"name": "A user can register success",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// List of first and last names",
+									"const firstNames = [",
+									"  'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer',",
+									"  'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara',",
+									"  'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen'",
+									"];",
+									"",
+									"const lastNames = [",
+									"  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia',",
+									"  'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez',",
+									"  'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'",
+									"];",
+									"",
+									"// Generate a random full name (First + Last)",
+									"function generateRandomFullName() {",
+									"  const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];",
+									"  const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];",
+									"  return `${randomFirstName} ${randomLastName}`;",
+									"}",
+									"",
+									"// Generate random email (userXXX@example.com)",
+									"function generateRandomEmail() {",
+									"  const randomNumber = Math.floor(Math.random() * 1000);",
+									"  return `user${randomNumber}@example.com`;",
+									"}",
+									"",
+									"// Generate random password (8-20 characters with uppercase, lowercase, numbers, special characters)",
+									"function generateRandomPassword() {",
+									"  const length = Math.floor(Math.random() * (20 - 8 + 1)) + 8; // Random length between 8 and 20",
+									"  const uppercase = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";",
+									"  const lowercase = \"abcdefghijklmnopqrstuvwxyz\";",
+									"  const numbers = \"0123456789\";",
+									"  const specialCharacters = \"!@#$%\";",
+									"",
+									"  // Ensure at least one character of each type",
+									"  const passwordArray = [",
+									"    uppercase[Math.floor(Math.random() * uppercase.length)],",
+									"    lowercase[Math.floor(Math.random() * lowercase.length)],",
+									"    numbers[Math.floor(Math.random() * numbers.length)],",
+									"    specialCharacters[Math.floor(Math.random() * specialCharacters.length)]",
+									"  ];",
+									"",
+									"  const allCharacters = uppercase + lowercase + numbers + specialCharacters;",
+									"",
+									"  // Fill the remaining length",
+									"  for (let i = passwordArray.length; i < length; i++) {",
+									"    const randomChar = allCharacters[Math.floor(Math.random() * allCharacters.length)];",
+									"    passwordArray.push(randomChar);",
+									"  }",
+									"",
+									"  // Shuffle and return password",
+									"  return passwordArray.sort(() => Math.random() - 0.5).join('');",
+									"}",
+									"",
+									"// Generate random telephone number (Thai mobile format: 10 digits)",
+									"function generateRandomTelephone() {",
+									"  const prefixOptions = ['06', '08', '09']; // Common Thai mobile prefixes",
+									"  const prefix = prefixOptions[Math.floor(Math.random() * prefixOptions.length)];",
+									"",
+									"  const remainingDigits = Math.floor(10000000 + Math.random() * 90000000).toString(); // 8 digits",
+									"  return `${prefix}${remainingDigits}`; // Example: 0812345678",
+									"}",
+									"",
+									"// Generate values",
+									"const randomFullName = generateRandomFullName();",
+									"const randomEmail = generateRandomEmail();",
+									"const randomPassword = generateRandomPassword();",
+									"const randomTelephone = generateRandomTelephone();",
+									"",
+									"// Log outputs for debugging (optional)",
+									"console.log('Random Full Name:', randomFullName);",
+									"console.log('Random Email:', randomEmail);",
+									"console.log('Random Password:', randomPassword);",
+									"console.log('Random Telephone:', randomTelephone);",
+									"",
+									"// Set environment variables in Postman",
+									"pm.environment.set(\"randomFullName\", randomFullName);",
+									"pm.environment.set(\"randomEmail\", randomEmail);",
+									"pm.environment.set(\"randomPassword\", randomPassword);",
+									"pm.environment.set(\"randomTelephone\", randomTelephone);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(response.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Response code is REG_1001\", function () {",
+									"    pm.expect(response.code).to.eql(\"REG_1001\");",
+									"});",
+									"",
+									"pm.test(\"Message is Registration successfully\", function () {",
+									"    pm.expect(response.message).to.eql(\"Registration successfully\");",
+									"});",
+									"",
+									"pm.test(\"Data contains expected fields\", function () {",
+									"    pm.expect(response.data).to.have.all.keys('name', 'email', 'telephone', 'password');",
+									"});",
+									"",
+									"pm.test(\"Name is not empty\", function () {",
+									"    pm.expect(response.data.name).to.not.be.empty;",
+									"});",
+									"",
+									"pm.test(\"Email is masked and contains @example.com\", function () {",
+									"    pm.expect(response.data.email).to.match(/@example\\.com$/);",
+									"});",
+									"",
+									"pm.test(\"Telephone is 10 digits\", function () {",
+									"    pm.expect(response.data.telephone).to.match(/^\\d{10}$/);",
+									"});",
+									"",
+									"",
+									"pm.test(\"Password is bcrypt hashed\", function () {",
+									"    pm.expect(response.data.password).to.match(/^\\$2[aby]\\$.{56}$/);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{randomFullName}}\",\n    \"password\": \"{{randomPassword}}\",\n    \"email\": \"{{randomEmail}}\",\n    \"telephone\": \"{{randomTelephone}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/register",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"register"
+							]
+						},
+						"description": "This request creates a new user. It runs as many times as the number of elements in the data array.\n\nThe pre-request script sets the current user information in a variable and then uses that variable in the request body.\n\nThe post-response script takes care of storing the response and branching the execution based on the success of the request."
+					},
+					"response": []
+				},
+				{
+					"name": "A user can't register with existing email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response status is failed\", function () {",
+									"    pm.expect(response.status).to.eql(\"failed\");",
+									"});",
+									"",
+									"pm.test(\"Response code is REG_1005\", function () {",
+									"    pm.expect(response.code).to.eql(\"REG_1005\");",
+									"});",
+									"",
+									"pm.test(\"Response message is 'Email Already Exists: The email already exists in the system.'\", function () {",
+									"    pm.expect(response.message).to.equal(\"Email Already Exists: The email already exists in the system.\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// List of first and last names",
+									"const firstNames = [",
+									"  'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer',",
+									"  'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara',",
+									"  'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen'",
+									"];",
+									"",
+									"const lastNames = [",
+									"  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia',",
+									"  'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez',",
+									"  'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'",
+									"];",
+									"",
+									"// Generate a random full name (First + Last)",
+									"function generateRandomFullName() {",
+									"  const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];",
+									"  const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];",
+									"  return `${randomFirstName} ${randomLastName}`;",
+									"}",
+									"",
+									"// Generate random email (userXXX@example.com)",
+									"function generateRandomEmail() {",
+									"  const randomNumber = Math.floor(Math.random() * 1000);",
+									"  return `user${randomNumber}@example.com`;",
+									"}",
+									"",
+									"// Generate random password (8-20 characters with uppercase, lowercase, numbers, special characters)",
+									"function generateRandomPassword() {",
+									"    // return \"P@ssw0rd991\"",
+									"  const length = Math.floor(Math.random() * (20 - 8 + 1)) + 8; // Random length between 8 and 20",
+									"  const uppercase = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";",
+									"  const lowercase = \"abcdefghijklmnopqrstuvwxyz\";",
+									"  const numbers = \"0123456789\";",
+									"  const specialCharacters = \"!@#$%^&*(),.?\\:|\";",
+									"",
+									"  // Ensure at least one character of each type",
+									"  const passwordArray = [",
+									"    uppercase[Math.floor(Math.random() * uppercase.length)],",
+									"    lowercase[Math.floor(Math.random() * lowercase.length)],",
+									"    numbers[Math.floor(Math.random() * numbers.length)],",
+									"    specialCharacters[Math.floor(Math.random() * specialCharacters.length)]",
+									"  ];",
+									"",
+									"  const allCharacters = uppercase + lowercase + numbers + specialCharacters;",
+									"",
+									"  // Fill the remaining length",
+									"  for (let i = passwordArray.length; i < length; i++) {",
+									"    const randomChar = allCharacters[Math.floor(Math.random() * allCharacters.length)];",
+									"    passwordArray.push(randomChar);",
+									"  }",
+									"",
+									"  // Shuffle and return password",
+									"  return passwordArray.sort(() => Math.random() - 0.5).join('');",
+									"}",
+									"",
+									"// Generate random telephone number (Thai mobile format: 10 digits)",
+									"function generateRandomTelephone() {",
+									"  const prefixOptions = ['06', '08', '09']; // Common Thai mobile prefixes",
+									"  const prefix = prefixOptions[Math.floor(Math.random() * prefixOptions.length)];",
+									"",
+									"  const remainingDigits = Math.floor(10000000 + Math.random() * 90000000).toString(); // 8 digits",
+									"  return `${prefix}${remainingDigits}`; // Example: 0812345678",
+									"}",
+									"",
+									"// Generate values",
+									"const randomFullName = generateRandomFullName();",
+									"const randomEmail = generateRandomEmail();",
+									"const randomPassword = generateRandomPassword();",
+									"const randomTelephone = generateRandomTelephone();",
+									"",
+									"// Log outputs for debugging (optional)",
+									"console.log('Random Full Name:', randomFullName);",
+									"console.log('Random Email:', randomEmail);",
+									"console.log('Random Password:', randomPassword);",
+									"console.log('Random Telephone:', randomTelephone);",
+									"",
+									"// Set environment variables in Postman",
+									"pm.environment.set(\"randomFullName\", randomFullName);",
+									"pm.environment.set(\"randomEmail\", randomEmail);",
+									"pm.environment.set(\"randomPassword\", randomPassword);",
+									"pm.environment.set(\"randomTelephone\", randomTelephone);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{randomFullName}}\",\n    \"password\": \"{{randomPassword}}\",\n    \"email\": \"user786@example.com\",\n    \"telephone\": \"{{randomTelephone}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/register",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"register"
+							]
+						},
+						"description": "This request creates a new user. It runs as many times as the number of elements in the data array.\n\nThe pre-request script sets the current user information in a variable and then uses that variable in the request body.\n\nThe post-response script takes care of storing the response and branching the execution based on the success of the request."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-002] Login",
+			"item": [
+				{
+					"name": "A user can login success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"const response = pm.response.json();",
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response status is 'success'\", function () {",
+									"    pm.expect(response.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Response code is 'LGN_2001'\", function () {",
+									"    pm.expect(response.code).to.eql(\"LGN_2001\");",
+									"});",
+									"",
+									"pm.test(\"Response message is 'Login successful'\", function () {",
+									"    pm.expect(response.message).to.eql(\"Login successful\");",
+									"});",
+									"",
+									"pm.test(\"Response contains data object\", function () {",
+									"    pm.expect(response).to.have.property('data');",
+									"});",
+									"",
+									"pm.test(\"Token exists and is a valid JWT format\", function () {",
+									"    pm.expect(response.data).to.have.property('token');",
+									"    pm.expect(response.data.token).to.match(/^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+$/);",
+									"});",
+									"",
+									"pm.test(\"User ID exists and is a valid MongoDB ObjectID\", function () {",
+									"    pm.expect(response.data).to.have.property('userId');",
+									"    pm.expect(response.data.userId).to.match(/^[a-fA-F0-9]{24}$/);",
+									"});",
+									"",
+									"pm.test(\"Email exists and is in valid format\", function () {",
+									"    pm.expect(response.data).to.have.property('email');",
+									"    pm.expect(response.data.email).to.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/);",
+									"});",
+									"",
+									"pm.test(\"Name exists and is not empty\", function () {",
+									"    pm.expect(response.data).to.have.property('name');",
+									"    pm.expect(response.data.name).to.not.be.empty;",
+									"});",
+									"",
+									"",
+									"",
+									"pm.test(\"isAdmin is false\", () => {",
+									"    pm.expect(response.data.isAdmin).to.eql(false);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"token\", res.data.token);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user93@example.com\",\n  \"password\": \"Rb6kK$e2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/auth/login",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-003] View Massage Shops",
+			"item": [
+				{
+					"name": "A user can view massage shops",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "page",
+								"value": "2",
+								"type": "text"
+							},
+							{
+								"key": "limit",
+								"value": "10",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URI}}/api/v1/massage-shops",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"massage-shops"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-004] Booking",
+			"item": [
+				{
+					"name": "conditon",
+					"item": [
+						{
+							"name": "Login with a user exceed 3 Bookings",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"",
+											"const response = pm.response.json();",
+											"let res = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 200 OK\", () => {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"isAdmin is false\", () => {",
+											"    pm.expect(res.data.isAdmin).to.eql(false);",
+											"});",
+											"",
+											"",
+											"pm.collectionVariables.set(\"tokenExceed3Bookings\", res.data.token);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"user93@example.com\",\n  \"password\": \"Rb6kK$e2\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{URI}}/api/v1/auth/login",
+									"host": [
+										"{{URI}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "A user can't make a massage booking more than 3 transactions per day",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let res = pm.response.json();",
+											"",
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"",
+											"pm.test(\"API should return status failed\", function () {",
+											"    pm.expect(res.status).to.eql(\"failed\");",
+											"});",
+											"",
+											"pm.test(\"API should return correct error code\", function () {",
+											"    pm.expect(res.code).to.eql(\"RSV_3004\");",
+											"});",
+											"",
+											"pm.test(\"API should return correct error message\", function () {",
+											"    pm.expect(res.message).to.eql(\"User has too many pending reservations for this date\");",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{tokenExceed3Bookings}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \"shopId\":\"67d5328df9839bbd407204a0\",\n   \"date\":\"19-05-2025 08:11\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{URI}}/api/v1/booking",
+									"host": [
+										"{{URI}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"booking"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "A user can login success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"isAdmin is false\", () => {",
+									"    pm.expect(res.data.isAdmin).to.eql(false);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"token\", res.data.token);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user93@example.com\",\n  \"password\": \"Rb6kK$e2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/auth/login",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can booking success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"let shopDetails = res.data.shopDetails;",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Reservation created successfully\", function () {",
+									"    pm.expect(res.status).to.eql(\"success\");",
+									"    pm.expect(res.code).to.eql(\"RSV_3001\");",
+									"    pm.expect(res.message).to.eql(\"Reservation created successfully\");",
+									"});",
+									"",
+									"pm.test(\"Reservation data is complete\", function () {",
+									"    pm.expect(res.data).to.have.property(\"date\");",
+									"    pm.expect(res.data).to.have.property(\"shopId\");",
+									"    pm.expect(res.data).to.have.property(\"userId\");",
+									"    pm.expect(res.data).to.have.property(\"status\");",
+									"    pm.expect(res.data).to.have.property(\"bookingId\");",
+									"    pm.expect(res.data.status).to.eql(\"Pending\");",
+									"    pm.expect(res.data.bookingId).to.not.be.empty;",
+									"});",
+									"",
+									"pm.test(\"Shop Name should not be empty\", function () {",
+									"    pm.expect(shopDetails.shopName, \"shopName is missing or empty\").to.not.be.oneOf([undefined, null, \"\"]);",
+									"});",
+									"",
+									"pm.test(\"Shop Address should not be empty\", function () {",
+									"    pm.expect(shopDetails.shopAddress, \"shopAddress is missing or empty\").to.not.be.oneOf([undefined, null, \"\"]);",
+									"});",
+									"",
+									"pm.test(\"Telephone should not be empty\", function () {",
+									"    pm.expect(shopDetails.telephone, \"telephone is missing or empty\").to.not.be.oneOf([undefined, null, \"\"]);",
+									"});",
+									"",
+									"pm.test(\"Open Time should not be empty\", function () {",
+									"    pm.expect(shopDetails.openTime, \"openTime is missing or empty\").to.not.be.oneOf([undefined, null, \"\"]);",
+									"});",
+									"",
+									"pm.test(\"Close Time should not be empty\", function () {",
+									"    pm.expect(shopDetails.closeTime, \"closeTime is missing or empty\").to.not.be.oneOf([undefined, null, \"\"]);",
+									"});",
+									"",
+									"pm.test(\"Updated At should not be empty\", function () {",
+									"    pm.expect(shopDetails.updatedAt, \"updatedAt is missing or empty\").to.not.be.oneOf([undefined, null, \"\"]);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let startDate = new Date();",
+									"",
+									"let endDate = new Date();",
+									"endDate.setFullYear(2025);",
+									"endDate.setMonth(11);",
+									"endDate.setDate(31);",
+									"endDate.setHours(23, 59, 59);",
+									"",
+									"let randomTimestamp = Math.floor(",
+									"    startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())",
+									");",
+									"",
+									"let randomDate = new Date(randomTimestamp);",
+									"",
+									"function pad(n) {",
+									"    return n < 10 ? '0' + n : n;",
+									"}",
+									"",
+									"let formattedDate = `${pad(randomDate.getDate())}-${pad(randomDate.getMonth() + 1)}-${randomDate.getFullYear()} ${pad(randomDate.getHours())}:${pad(randomDate.getMinutes())}`;",
+									"",
+									"pm.variables.set(\"randomDate\", formattedDate);",
+									"",
+									"console.log(\"Random Date:\", formattedDate);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"shopId\":\"67d5328df9839bbd407204a0\",\n   \"date\":\"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-005] View Owner Booking",
+			"item": [
+				{
+					"name": "A user can login success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"isAdmin is false\", () => {",
+									"    pm.expect(res.data.isAdmin).to.eql(false);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"token\", res.data.token);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user93@example.com\",\n  \"password\": \"Rb6kK$e2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/auth/login",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can booking success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"pm.collectionVariables.set(\"bookingId\", res.data.bookingId);",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let startDate = new Date();",
+									"",
+									"let endDate = new Date();",
+									"endDate.setFullYear(2025);",
+									"endDate.setMonth(11);",
+									"endDate.setDate(31);",
+									"endDate.setHours(23, 59, 59);",
+									"",
+									"let randomTimestamp = Math.floor(",
+									"    startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())",
+									");",
+									"",
+									"let randomDate = new Date(randomTimestamp);",
+									"",
+									"function pad(n) {",
+									"    return n < 10 ? '0' + n : n;",
+									"}",
+									"",
+									"let formattedDate = `${pad(randomDate.getDate())}-${pad(randomDate.getMonth() + 1)}-${randomDate.getFullYear()} ${pad(randomDate.getHours())}:${pad(randomDate.getMinutes())}`;",
+									"",
+									"pm.variables.set(\"randomDate\", formattedDate);",
+									"",
+									"console.log(\"Random Date:\", formattedDate);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"shopId\":\"67d5328df9839bbd407204a0\",\n   \"date\":\"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can view their bookings",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status is success\", () => {",
+									"    pm.expect(jsonData.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Code is RSV_3005\", () => {",
+									"    pm.expect(jsonData.code).to.eql(\"RSV_3005\");",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", () => {",
+									"    pm.expect(jsonData.message).to.eql(\"Get reservation successfully\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-006] Edit Owner Booking",
+			"item": [
+				{
+					"name": "A user can login success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"isAdmin is false\", () => {",
+									"    pm.expect(res.data.isAdmin).to.eql(false);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"token\", res.data.token);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user93@example.com\",\n  \"password\": \"Rb6kK$e2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/auth/login",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can booking success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"pm.collectionVariables.set(\"bookingId\", res.data.bookingId);",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let startDate = new Date();",
+									"",
+									"let endDate = new Date();",
+									"endDate.setFullYear(2025);",
+									"endDate.setMonth(11);",
+									"endDate.setDate(31);",
+									"endDate.setHours(23, 59, 59);",
+									"",
+									"let randomTimestamp = Math.floor(",
+									"    startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())",
+									");",
+									"",
+									"let randomDate = new Date(randomTimestamp);",
+									"",
+									"function pad(n) {",
+									"    return n < 10 ? '0' + n : n;",
+									"}",
+									"",
+									"let formattedDate = `${pad(randomDate.getDate())}-${pad(randomDate.getMonth() + 1)}-${randomDate.getFullYear()} ${pad(randomDate.getHours())}:${pad(randomDate.getMinutes())}`;",
+									"",
+									"pm.variables.set(\"randomDate\", formattedDate);",
+									"",
+									"console.log(\"Random Date:\", formattedDate);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"shopId\":\"67d5328df9839bbd407204a0\",\n   \"date\":\"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can edit their bookings",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let startDate = new Date();",
+									"",
+									"let endDate = new Date();",
+									"endDate.setFullYear(2025);",
+									"endDate.setMonth(11);",
+									"endDate.setDate(31);",
+									"endDate.setHours(23, 59, 59);",
+									"",
+									"let randomTimestamp = Math.floor(",
+									"    startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())",
+									");",
+									"",
+									"let randomDate = new Date(randomTimestamp);",
+									"",
+									"function pad(n) {",
+									"    return n < 10 ? '0' + n : n;",
+									"}",
+									"",
+									"let formattedDate = `${pad(randomDate.getDate())}-${pad(randomDate.getMonth() + 1)}-${randomDate.getFullYear()} ${pad(randomDate.getHours())}:${pad(randomDate.getMinutes())}`;",
+									"",
+									"pm.variables.set(\"randomDate\", formattedDate);",
+									"",
+									"console.log(\"Random Date:\", formattedDate);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"let expectedDate = pm.variables.get(\"randomDate\");",
+									"let expectedShopId = \"67d5328df9839bbd407204a6\";",
+									"",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response status is 'success'\", () => {",
+									"    pm.expect(res.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Response code is 'RSV_3010'\", () => {",
+									"    pm.expect(res.code).to.eql(\"RSV_3010\");",
+									"});",
+									"",
+									"pm.test(\"Response message is 'Update reservation successfully'\", () => {",
+									"    pm.expect(res.message).to.eql(\"Update reservation successfully\");",
+									"});",
+									"",
+									"",
+									"pm.test(`ShopId in response matches the updated shopId (${expectedShopId})`, () => {",
+									"    pm.expect(res.data.shopDetails.shopId).to.eql(expectedShopId);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"shopId\": \"67d5328df9839bbd407204a6\",\n    \"date\": \"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking/{{bookingId}}",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-007] Delete Owner Booking",
+			"item": [
+				{
+					"name": "A user can login success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"isAdmin is false\", () => {",
+									"    pm.expect(res.data.isAdmin).to.eql(false);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"token\", res.data.token);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user93@example.com\",\n  \"password\": \"Rb6kK$e2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/auth/login",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can booking success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"pm.collectionVariables.set(\"bookingId\", res.data.bookingId);",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let startDate = new Date();",
+									"",
+									"let endDate = new Date();",
+									"endDate.setFullYear(2025);",
+									"endDate.setMonth(11);",
+									"endDate.setDate(31);",
+									"endDate.setHours(23, 59, 59);",
+									"",
+									"let randomTimestamp = Math.floor(",
+									"    startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())",
+									");",
+									"",
+									"let randomDate = new Date(randomTimestamp);",
+									"",
+									"function pad(n) {",
+									"    return n < 10 ? '0' + n : n;",
+									"}",
+									"",
+									"let formattedDate = `${pad(randomDate.getDate())}-${pad(randomDate.getMonth() + 1)}-${randomDate.getFullYear()} ${pad(randomDate.getHours())}:${pad(randomDate.getMinutes())}`;",
+									"",
+									"pm.variables.set(\"randomDate\", formattedDate);",
+									"",
+									"console.log(\"Random Date:\", formattedDate);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"shopId\":\"67d5328df9839bbd407204a0\",\n   \"date\":\"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can delete booking success",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"",
+									"pm.sendRequest({",
+									"    url: \"http://localhost:3001/api/v1/login\",",
+									"    method: \"POST\",",
+									"    header: {",
+									"        \"Content-Type\": \"application/json\"",
+									"    },",
+									"    body: {",
+									"        mode: \"raw\",",
+									"        raw: JSON.stringify({",
+									"            \"email\": \"test1@gmail.com\",",
+									"            \"password\": \"P@ssw0rd\"",
+									"        })",
+									"    }",
+									"}, function (err, res) {",
+									"    if (err) {",
+									"        console.error(\"Login request failed:\", err);",
+									"    } else {",
+									"        let response = res.json();",
+									"        if (response.data && response.data.token) {",
+									"            pm.variables.set(\"tokenAdmin\", response.data.token);",
+									"            console.log(\"Token set:\", response.data.token);",
+									"        } else {",
+									"            console.error(\"Token not found in response:\", response);",
+									"        }",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/booking/{{bookingId}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"booking",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-008] Logout",
+			"item": [
+				{
+					"name": "A user can login success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"isAdmin is boolean false\", () => {",
+									"    pm.expect(res.data.isAdmin).to.eql(false);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"token\", res.data.token);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user93@example.com\",\n  \"password\": \"Rb6kK$e2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/auth/login",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can booking success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"pm.collectionVariables.set(\"bookingId\", res.data.bookingId);",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let startDate = new Date();",
+									"",
+									"let endDate = new Date();",
+									"endDate.setFullYear(2025);",
+									"endDate.setMonth(11);",
+									"endDate.setDate(31);",
+									"endDate.setHours(23, 59, 59);",
+									"",
+									"let randomTimestamp = Math.floor(",
+									"    startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())",
+									");",
+									"",
+									"let randomDate = new Date(randomTimestamp);",
+									"",
+									"function pad(n) {",
+									"    return n < 10 ? '0' + n : n;",
+									"}",
+									"",
+									"let formattedDate = `${pad(randomDate.getDate())}-${pad(randomDate.getMonth() + 1)}-${randomDate.getFullYear()} ${pad(randomDate.getHours())}:${pad(randomDate.getMinutes())}`;",
+									"",
+									"pm.variables.set(\"randomDate\", formattedDate);",
+									"",
+									"console.log(\"Random Date:\", formattedDate);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"shopId\":\"67d5328df9839bbd407204a0\",\n   \"date\":\"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can logout success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response code is LOT_5001\", () => {",
+									"    pm.expect(res.code).to.eql(\"LOT_5001\");",
+									"});",
+									"",
+									"pm.test(\"Message is 'Logout successful'\", () => {",
+									"    pm.expect(res.message).to.eql(\"Logout successful\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer a348dd1309b0763ba3a4c88d6d557e07",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "X-Line-Retry-Key",
+								"value": "123e4567-e89b-12d3-a456-426614174000",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3001/api/v1/auth/logout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can't booking after logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 401 Unauthorized\", () => {",
+									"    pm.response.to.have.status(401); ",
+									"});",
+									"",
+									"pm.test(\"Response status is failed\", () => {",
+									"    pm.expect(res.status).to.eql(\"failed\");",
+									"});",
+									"",
+									"pm.test(\"Response code is TKN_6002\", () => {",
+									"    pm.expect(res.code).to.eql(\"TKN_6002\");",
+									"});",
+									"",
+									"pm.test(\"Message is 'Invaild or session expired'\", () => {",
+									"    pm.expect(res.message).to.eql(\"Invaild or session expired\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let startDate = new Date();",
+									"",
+									"let endDate = new Date();",
+									"endDate.setFullYear(2025);",
+									"endDate.setMonth(11);",
+									"endDate.setDate(31);",
+									"endDate.setHours(23, 59, 59);",
+									"",
+									"let randomTimestamp = Math.floor(",
+									"    startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())",
+									");",
+									"",
+									"let randomDate = new Date(randomTimestamp);",
+									"",
+									"function pad(n) {",
+									"    return n < 10 ? '0' + n : n;",
+									"}",
+									"",
+									"let formattedDate = `${pad(randomDate.getDate())}-${pad(randomDate.getMonth() + 1)}-${randomDate.getFullYear()} ${pad(randomDate.getHours())}:${pad(randomDate.getMinutes())}`;",
+									"",
+									"pm.variables.set(\"randomDate\", formattedDate);",
+									"",
+									"console.log(\"Random Date:\", formattedDate);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"shopId\":\"67d5328df9839bbd407204a0\",\n   \"date\":\"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-009] Admin Login",
+			"item": [
+				{
+					"name": "An admin can login success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"isAdmin is boolean true\", () => {",
+									"    pm.expect(res.data.isAdmin).to.eql(true);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"tokenAdmin\", res.data.token);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@hotmail.com\",\n  \"password\": \"Com@sci123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/auth/login",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-10] Admin View Any Booking",
+			"item": [
+				{
+					"name": "An admin can view any bookings",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const jsonData = pm.response.json();",
+									"",
+									"pm.test(\"Status is success\", () => {",
+									"    pm.expect(jsonData.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Code is RSV_3005\", () => {",
+									"    pm.expect(jsonData.code).to.eql(\"RSV_3005\");",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", () => {",
+									"    pm.expect(jsonData.message).to.eql(\"Get reservation successfully\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenAdmin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-11] Admin Edit Booking",
+			"item": [
+				{
+					"name": "An admin can edit any booking",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"let startDate = new Date();",
+									"",
+									"let endDate = new Date();",
+									"endDate.setFullYear(2025);",
+									"endDate.setMonth(11);",
+									"endDate.setDate(31);",
+									"endDate.setHours(23, 59, 59);",
+									"",
+									"let randomTimestamp = Math.floor(",
+									"    startDate.getTime() + Math.random() * (endDate.getTime() - startDate.getTime())",
+									");",
+									"",
+									"let randomDate = new Date(randomTimestamp);",
+									"",
+									"function pad(n) {",
+									"    return n < 10 ? '0' + n : n;",
+									"}",
+									"",
+									"let formattedDate = `${pad(randomDate.getDate())}-${pad(randomDate.getMonth() + 1)}-${randomDate.getFullYear()} ${pad(randomDate.getHours())}:${pad(randomDate.getMinutes())}`;",
+									"",
+									"pm.variables.set(\"randomDate\", formattedDate);",
+									"",
+									"console.log(\"Random Date:\", formattedDate);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"let expectedDate = pm.variables.get(\"randomDate\");",
+									"let expectedShopId = \"67d5328df9839bbd407204a6\";",
+									"",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response status is 'success'\", () => {",
+									"    pm.expect(res.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Response code is 'RSV_3010'\", () => {",
+									"    pm.expect(res.code).to.eql(\"RSV_3010\");",
+									"});",
+									"",
+									"pm.test(\"Response message is 'Update reservation successfully'\", () => {",
+									"    pm.expect(res.message).to.eql(\"Update reservation successfully\");",
+									"});",
+									"",
+									"",
+									"pm.test(`ShopId in response matches the updated shopId (${expectedShopId})`, () => {",
+									"    pm.expect(res.data.shopDetails.shopId).to.eql(expectedShopId);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenAdmin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"shopId\": \"67d5328df9839bbd407204a6\",\n    \"date\": \"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking/BKD-30875447",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking",
+								"BKD-30875447"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "[REQ-12] Admin Delete Booking",
+			"item": [
+				{
+					"name": "A user can login success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"isAdmin is false\", () => {",
+									"    pm.expect(res.data.isAdmin).to.eql(false);",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"token\", res.data.token);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user93@example.com\",\n  \"password\": \"Rb6kK$e2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/auth/login",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "A user can booking success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"pm.collectionVariables.set(\"bookingId\", res.data.bookingId);",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"shopId\":\"67d5328df9839bbd407204a0\",\n   \"date\":\"{{randomDate}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URI}}/api/v1/booking",
+							"host": [
+								"{{URI}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"booking"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "An admin can delete booking success",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let res = pm.response.json();",
+									"",
+									"pm.test(\"Status code is 200 OK\", () => {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response status is 'success'\", () => {",
+									"    pm.expect(res.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Response code is 'RSV_3008'\", () => {",
+									"    pm.expect(res.code).to.eql(\"RSV_3008\");",
+									"});",
+									"",
+									"",
+									"pm.test(\"Response message is 'Delete reservation successfully'\", () => {",
+									"    pm.expect(res.message).to.eql(\"Delete reservation successfully\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3001/api/v1/booking/{{bookingId}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3001",
+							"path": [
+								"api",
+								"v1",
+								"booking",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "URI",
+			"value": "http://localhost:3001",
+			"type": "string"
+		},
+		{
+			"key": "PORT",
+			"value": "3001",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "bookingId",
+			"value": ""
+		},
+		{
+			"key": "shopId",
+			"value": ""
+		},
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "shopName",
+			"value": ""
+		},
+		{
+			"key": "shopPhone",
+			"value": ""
+		},
+		{
+			"key": "tokenBooing",
+			"value": ""
+		},
+		{
+			"key": "tokenExceed3Bookings",
+			"value": ""
+		},
+		{
+			"key": "tokenAdmin",
+			"value": ""
+		}
+	]
+}
