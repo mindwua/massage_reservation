@@ -58,7 +58,7 @@ class ReservationServiceModel {
         const createdReservation = await ReservationMongooseModel.create(reservation);
         const formattedResponse = new ReservationServiceModel(
           newDate,
-          null,
+          createdReservation.shopId,
           createdReservation.userId,
           shopDetails,
           createdReservation.bookingId
