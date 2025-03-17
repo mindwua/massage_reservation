@@ -6,7 +6,7 @@ import { bookingSchema, bookingRunningSchema, bodyPutSchema, bodyPatchSchema } f
 
 const routerReservation = Router();
 
-routerReservation.post("/booking", verifyToken, validateBody(bookingSchema), bookingReservation);
+routerReservation.post("/booking", verifyToken,validateBody(), bookingReservation);
 routerReservation.get("/booking", verifyToken, getReservation);
 routerReservation.delete("/booking/:bookingId", verifyToken, validateParam(bookingRunningSchema), deleteReservation);
 routerReservation.put("/booking/:bookingId", verifyToken, validateParam(bookingRunningSchema), validateBody(bodyPutSchema), updateReservation);

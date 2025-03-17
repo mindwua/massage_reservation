@@ -51,7 +51,7 @@ class ReservationServiceModel {
       const shopDetails = await MassageShopServiceModel.fetchShopDetails(reservation.shopId)
       const newDate = formatDate(reservation.date)
       const checkPendingReservations = await ReservationMongooseModel.find({
-        date: { $gte: startOfDay, $lte: endOfDay }, status: Status.PENDING
+        date: { $gte: startOfDay, $lte: endOfDay }, status: Status.PENDING, userId: reservation.userId
       }).countDocuments();
 
       if (checkPendingReservations < 3) {
