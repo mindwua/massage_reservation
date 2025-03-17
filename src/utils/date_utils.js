@@ -17,7 +17,6 @@ export function formatDate(isoDateStr) {
     let hour = date.getUTCHours(); // Keep UTC hour
     const minute = String(date.getUTCMinutes()).padStart(2, "0");
 
-    // Convert to 12-hour format
     const amPm = hour >= 12 ? "PM" : "AM";
     hour = hour % 12 || 12; // Convert 0 (midnight) to 12
     console.log(`${day}/${month}/${year} ${String(hour).padStart(2, "0")}:${minute} ${amPm}`)
@@ -36,7 +35,7 @@ export function convertDateToISO(dateStr) {
 
   const date = new Date(isoString);
   if (isNaN(date)) {
-      throw new Error("Invalid date format");
+    throw new Error("Invalid date format");
   }
 
   return date.toISOString();
@@ -46,8 +45,8 @@ export function rangeDate(dateStr) {
   try {
     const startOfDay = dateStr.replace(/T.*Z/, "T00:00:00.000Z");
     const endOfDay = dateStr.replace(/T.*Z/, "T23:59:59.999Z")
-  
-    return {startOfDay: startOfDay, endOfDay: endOfDay}
+
+    return { startOfDay: startOfDay, endOfDay: endOfDay }
   } catch (e) {
     throw new Error("Invalid ISO date format");
   }
