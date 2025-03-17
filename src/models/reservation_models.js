@@ -78,7 +78,7 @@ class ReservationServiceModel {
       logger.info("🔍 Running Aggregation...");
 
       const matchStage = {};
-      if (userId && !isAdmin) matchStage.userId = userId;
+      if (userId && !isAdmin) matchStage.userId = new mongoose.Types.ObjectId(userId);
       if (reqQuery?.userId && isAdmin) matchStage.userId = new mongoose.Types.ObjectId(reqQuery.userId);
       if (reqQuery?.shopId) matchStage.shopId = new mongoose.Types.ObjectId(reqQuery.shopId);
       if (reqQuery?.status) matchStage.status = reqQuery.status;
@@ -89,7 +89,7 @@ class ReservationServiceModel {
       let results = await ReservationMongooseModel.aggregate([
         {
           $addFields: {
-            shopIdObject: { $toObjectId: "$shopId" }
+            shopIdObject: { $toObjectId: "$shopId" },
           }
         },
         {
