@@ -58,6 +58,7 @@ export const Codes = Object.freeze({
   // Permission Messages
   TKN_6001: "TKN_6001",
   TKN_6002: "TKN_6002",
+  TKN_6003: "TKN_6003",
 
   // Massage Shops
   MGS_1001: "MGS_1001",
@@ -116,6 +117,7 @@ export const Messages = Object.freeze({
   // Permission Messages
   TKN_6001: "Access denied. No token provided.",
   TKN_6002: "Invaild or session expired",
+  TKN_6003: "Access denied. You do not have permission to perform this action.",
 
   //General Messages
   GNR_1001: "Internal Server Error",
