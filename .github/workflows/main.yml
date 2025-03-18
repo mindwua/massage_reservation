@@ -2,44 +2,56 @@ name: Run Newman Tests for Massage Reservation API
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ] 
 
 jobs:
   run-newman-tests:
     runs-on: ubuntu-latest
 
     steps:
+      # ดึง source code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ติดตั้ง Node.js version 18 (หรือเปลี่ยนได้ตามต้องการ)
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
+      # ติดตั้ง dependencies ของ backend
       - name: Install backend dependencies
         run: npm install
 
+      # ติดตั้ง Newman CLI
       - name: Install Newman
         run: npm install -g newman
 
+      # ติดตั้ง htmlextra reporter เพิ่มเติม
       - name: Install Newman HTML Extra Reporter
         run: npm install -g newman-reporter-htmlextra
 
+      # Start backend server
       - name: Start backend
         run: npm run start &
         env:
-          PORT: 3001
+          PORT: 3001  # กำหนด PORT ตรงกับ API backend ที่ newman จะทดสอบ
 
+      # รอ backend ให้พร้อม
       - name: Wait for backend to be ready
-        run: sleep 10
+        run: sleep 10 
 
+      # Run Newman collection
       - name: Run Newman Collection - Massage Reservation API
         run: |
-          newman run "collections/Massage Reservation API - Functional Test.postman_collection.json" \
+          FORCE_COLOR=1 newman run "collections/Massage Reservation API - Functional Test.postman_collection.json" \
+          --color on \
           --reporters cli,htmlextra \
           --reporter-htmlextra-export newman-report.html
+        env:
+          NODE_ENV: test
 
+      # อัปโหลดรายงาน HTML ไปที่ Artifacts
       - name: Upload Newman HTML Report
         uses: actions/upload-artifact@v4
         with:
