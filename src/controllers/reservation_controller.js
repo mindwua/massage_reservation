@@ -122,12 +122,14 @@ export async function getReservation(req, res) {
         );
       }
     }
+    let total = await ReservationMongooseModel.countDocuments()
     res.status(StatusCodes.OK).json({
       status: StatusMessages.SUCCESS,
       code: Codes.RSV_3005,
       count: result.length,
+      total: total,
       page: page,
-      totalPages: Math.ceil(result.length / limit) == 0 ? 1 : Math.ceil(result.length / limit),
+      totalPages: Math.ceil(total / limit),
       message: Messages.RSV_3005,
       data: result,
     });
