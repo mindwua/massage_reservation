@@ -2,7 +2,7 @@ name: Run Newman Tests for Massage Reservation API
 
 on:
   push:
-    branches: [ main ]   # ✅ หรือจะเป็น pull_request: branches: [main] ถ้าจะรันหลัง merge
+    branches: [ main ]
 
 jobs:
   run-newman-tests:
@@ -23,16 +23,13 @@ jobs:
       - name: Install Newman
         run: npm install -g newman
 
-      - name: Install Newman HTML Reporter
-        run: npm install -g newman-reporter-html
-
-      - name: Install Newman CLI Full Reporter
-        run: npm install -g newman-reporter-cli-full
+      - name: Install Newman HTML Extra Reporter
+        run: npm install -g newman-reporter-htmlextra
 
       - name: Start backend
         run: npm run start &
         env:
-          PORT: 3001  # กำหนด PORT ให้ตรงกับที่ Newman ยิง (แล้วแต่โปรเจกต์ของ Mai)
+          PORT: 3001
 
       - name: Wait for backend to be ready
         run: sleep 10
@@ -40,9 +37,8 @@ jobs:
       - name: Run Newman Collection - Massage Reservation API
         run: |
           newman run "collections/Massage Reservation API - Functional Test.postman_collection.json" \
-          --reporters cli,cli-full,html \
-          --reporter-cli-full-noSuccessAssertions=false \
-          --reporter-html-export newman-report.html
+          --reporters cli,htmlextra \
+          --reporter-htmlextra-export newman-report.html
 
       - name: Upload Newman HTML Report
         uses: actions/upload-artifact@v4
