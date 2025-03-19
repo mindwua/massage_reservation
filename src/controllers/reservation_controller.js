@@ -122,7 +122,7 @@ export async function getReservation(req, res) {
         );
       }
     }
-    let total = await ReservationMongooseModel.countDocuments()
+    let total = isAdmin ? await ReservationMongooseModel.countDocuments() : await ReservationMongooseModel.countDocuments({userId: userId});
     res.status(StatusCodes.OK).json({
       status: StatusMessages.SUCCESS,
       code: Codes.RSV_3005,
