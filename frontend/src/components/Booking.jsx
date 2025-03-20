@@ -53,7 +53,7 @@ const ViewBooking = () => {
         const shopsRes = await axios.get("/api/v1/massage-shops", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setShops(shopsRes.data.shops);
+        setShops(shopsRes.data.data);
       } catch (err) {
         setError("Failed to load data.");
       }

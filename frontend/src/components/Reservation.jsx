@@ -51,7 +51,7 @@ function Reservation() {
             Authorization: `Bearer ${token}`,
           },
         });
-        setShops(res.data.shops);
+        setShops(res.data.data);
       } catch (err) {
         console.error("Error fetching shops:", err);
         setError("Failed to load shops. Please try again.");
