@@ -15,7 +15,6 @@ export async function loginUser(req, res) {
                 message: Messages.LGN_2003
             });
         }
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(StatusCodes.UNAUTHORIZED).json({
