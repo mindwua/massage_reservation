@@ -10,7 +10,7 @@ export const sendPromotion = async () => {
             messages: [
                 {
                     type: 'text',
-                    text: '🎉 Special Promotion! Get 20% off your next purchase! 🎉'
+                    text: '🎉Special Promotion! Get 20% off your next purchase! 🎉'
                 }
             ]
         };

@@ -9,11 +9,11 @@ import { AccountMongooseModel, AccountServiceModel } from "../models/account_mod
 
 async function validateShop(shopId) {
   try {
-    const found = await MassageShopMongooseModel.findById( shopId ).countDocuments();
+    const found = await MassageShopMongooseModel.findById(shopId).countDocuments();
     if (found) {
       return true;
     }
-      return false;
+    return false;
   } catch (e) {
     throw new Error("Shop not found");
   }
@@ -63,7 +63,7 @@ export async function bookingReservation(req, res) {
         message: Messages.RSV_3001,
         data: result,
       });
-      sendSlackMessage(result, req.user)
+      await sendSlackMessage(result, req.user)
     } else {
       res.status(StatusCodes.NOT_FOUND).json({
         status: StatusMessages.FAILED,
@@ -122,7 +122,7 @@ export async function getReservation(req, res) {
         );
       }
     }
-    let total = isAdmin ? await ReservationMongooseModel.countDocuments() : await ReservationMongooseModel.countDocuments({userId: userId});
+    let total = isAdmin ? await ReservationMongooseModel.countDocuments() : await ReservationMongooseModel.countDocuments({ userId: userId });
     res.status(StatusCodes.OK).json({
       status: StatusMessages.SUCCESS,
       code: Codes.RSV_3005,
