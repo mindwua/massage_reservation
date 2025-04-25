@@ -6,7 +6,7 @@ import logger from "./logger_utils.js"
 dotenv.config({ path: "../config/config.env" });
 export const sendSlackMessage = async (message, user) => {
   const slackUrl = "https://slack.com/api/chat.postMessage";
-  const token = process.env.SLACK_BOT_TOKEN;
+  const token = "xoxb-8800115384998-8806257865845-aqEmu7f8IXx0gbRvBJvlFvCU";
   if (!token) {
     throw new Error('Slack bot token is not defined in environment variables.');
   }
